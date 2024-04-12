@@ -97,14 +97,9 @@ try {
         if ($('body').text() != "") {
           let attachment_file = ""
           if (post.image.indexOf('amazon.com') > -1) {
-            try {
-              attachment_file = new URL(post.image).pathname
-            } catch (e) {
-              console.log(post.title, post.image)
-              console.log(e)
-            }
-          } else {
             attachment_file = post.image
+          } else {
+            attachment_file = urljoin(domain, post.image)
           }
 
           const post_id = start_id
