@@ -4,6 +4,7 @@ const config = require(process.cwd() + '/config/app');
 const database = require(process.cwd() + '/modules/app/helpers/database');
 const urljoin = require('url-join')
 const moment = require('moment')
+const cheerio = require('cheerio')
 
 // ==================================
 global.__version = config.app.version;
@@ -20,7 +21,7 @@ const CateModel = require(__modules + '/category/models/Category')
 const PostModel = require(__modules + '/post/models/Post')
 const UserModel = require(__modules + '/user/models/User')
 const { get_settings } = require(__modules + '/app/helpers/system-setting');
-const [alt_ip, start_id] = process.argv.slice(2);
+const [alt_ip, _start_id] = process.argv.slice(2);
 
 function sectionsToContent({ meta_content = "", sections = [] }) {
   let content = meta_content && meta_content.main ? meta_content.main : ''
@@ -37,7 +38,7 @@ function sectionsToContent({ meta_content = "", sections = [] }) {
 }
 
 console.log("[!]: Replacement IP", alt_ip)
-console.log("[!]: Start from ID", start_id)
+console.log("[!]: Start from ID", _start_id)
 console.log("")
 console.log('Starting BackupXML process...')
 try {
@@ -63,14 +64,13 @@ try {
     const { reviews } = await ReviewList(default_list_agrs);
     const { posts } = await PostList(default_list_agrs);
     // console.log(reviews.length, posts.length)
-
+    let start_id = Number(_start_id || 1)
     const items = [];
     [
       ...reviews.map(item => Object.assign(item, { _type: "review" })),
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ]
       .map((post, i) => {
-        const post_id = i + Number(start_id || 0)
         const date_string = moment(post.created_at).utcOffset(0).toString()
         const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
         let creator = ""
@@ -93,90 +93,95 @@ try {
             })
         }
         content = content.split('%comparison_table%').join("")
-
-        let attachment_file = ""
-        if (post.image.indexOf('amazon.com') > -1) {
-          try {
-            attachment_file = new URL(post.image).pathname
-          } catch (e) {
-            console.log(post.title, post.image)
-            console.log(e)
+        const $ = cheerio.load(content)
+        if ($.find('body').text() != "") {
+          let attachment_file = ""
+          if (post.image.indexOf('amazon.com') > -1) {
+            try {
+              attachment_file = new URL(post.image).pathname
+            } catch (e) {
+              console.log(post.title, post.image)
+              console.log(e)
+            }
+          } else {
+            attachment_file = post.image
           }
-        } else {
-          attachment_file = post.image
+
+          const post_id = start_id
+          start_id = start_id + 2
+
+          const post_with_thumbnail = [
+            // post
+            {
+              title: { $: post.title },
+              link: urljoin(domain, post.meta_slug),
+              pubDate: date_string,
+              "dc:creator": { $: creator },
+              guid: {
+                "@isPermaLink": "fase",
+                $: urljoin(settings.domain, '/?p=' + post_id)
+              },
+              description: { $: post.meta_desc.split("%").join("") },
+              "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
+              "content:encoded": { $: content },
+              "wp:post_id": post_id,
+              "wp:post_date": { $: date_format },
+              "wp:post_date_gmt": { $: date_format },
+              "wp:post_modified": { $: date_format },
+              "wp:post_modified_gmt": { $: date_format },
+              "wp:comment_status": { $: 'open' },
+              "wp:ping_status": { $: 'open' },
+              "wp:post_name": { $: post.meta_slug.split('/').join('') },
+              "wp:status": { $: 'publish' },
+              "wp:post_type": { $: "post" },
+              "wp:post_password": { $: "" },
+              "wp:is_sticky": 0,
+              "wp:postmeta": [{
+                "wp:meta_key": { $: "_edit_last" },
+                "wp:meta_value": { $: 1 }
+              }, {
+                "wp:meta_key": { $: "_thumbnail_id" },
+                "wp:meta_value": { $: post_id + 1 }
+              }]
+            },
+            // featured image
+            {
+              title: { $: post.title },
+              link: urljoin(domain, post.meta_slug),
+              pubDate: date_string,
+              "dc:creator": { $: creator },
+              guid: {
+                "@isPermaLink": "fase",
+                $: post.image || ""
+              },
+              description: "",
+              "content:encoded": { $: "" },
+              "excerpt:encoded": { $: "" },
+              "wp:post_id": post_id + 1,
+              "wp:post_date": { $: date_format },
+              "wp:post_date_gmt": { $: date_format },
+              "wp:post_modified": { $: date_format },
+              "wp:post_modified_gmt": { $: date_format },
+              "wp:comment_status": { $: 'open' },
+              "wp:post_name": { $: post.meta_slug.split('/').join('') },
+              "wp:post_parent": post_id,
+              "wp:ping_status": { $: 'closed' },
+              "wp:status": { $: 'inherit' },
+              "wp:post_type": { $: "attachment" },
+              "wp:post_password": { $: "" },
+              "wp:is_sticky": 0,
+              "wp:attachment_url": { $: post.image || "" },
+              "wp:postmeta": [{
+                "wp:meta_key": { $: "_wp_attached_file" },
+                "wp:meta_value": { $: attachment_file }
+              }, {
+                "wp:meta_key": { $: "_wp_attachment_image_alt" },
+                "wp:meta_value": { $: post.title }
+              }]
+            }
+          ]
+          items.push(...post_with_thumbnail)
         }
-
-        const post_with_thumbnail = [
-          // post
-          {
-            title: { $: post.title },
-            link: urljoin(domain, post.meta_slug),
-            pubDate: date_string,
-            "dc:creator": { $: creator },
-            guid: {
-              "@isPermaLink": "fase",
-              $: urljoin(settings.domain, '/?p=' + post_id)
-            },
-            description: { $: post.meta_desc.split("%").join("") },
-            "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
-            "content:encoded": { $: content },
-            "wp:post_id": post_id,
-            "wp:post_date": { $: date_format },
-            "wp:post_date_gmt": { $: date_format },
-            "wp:post_modified": { $: date_format },
-            "wp:post_modified_gmt": { $: date_format },
-            "wp:comment_status": { $: 'open' },
-            "wp:ping_status": { $: 'open' },
-            "wp:post_name": { $: post.meta_slug.split('/').join('') },
-            "wp:status": { $: 'publish' },
-            "wp:post_type": { $: "post" },
-            "wp:post_password": { $: "" },
-            "wp:is_sticky": 0,
-            "wp:postmeta": [{
-              "wp:meta_key": { $: "_edit_last" },
-              "wp:meta_value": { $: 1 }
-            }, {
-              "wp:meta_key": { $: "_thumbnail_id" },
-              "wp:meta_value": { $: post_id + 1 }
-            }]
-          },
-          // featured image
-          {
-            title: { $: post.title },
-            link: urljoin(domain, post.meta_slug),
-            pubDate: date_string,
-            "dc:creator": { $: creator },
-            guid: {
-              "@isPermaLink": "fase",
-              $: post.image || ""
-            },
-            description: "",
-            "content:encoded": { $: "" },
-            "excerpt:encoded": { $: "" },
-            "wp:post_id": post_id + 1,
-            "wp:post_date": { $: date_format },
-            "wp:post_date_gmt": { $: date_format },
-            "wp:post_modified": { $: date_format },
-            "wp:post_modified_gmt": { $: date_format },
-            "wp:comment_status": { $: 'open' },
-            "wp:post_name": { $: post.meta_slug.split('/').join('') },
-            "wp:post_parent": post_id,
-            "wp:ping_status": { $: 'closed' },
-            "wp:status": { $: 'inherit' },
-            "wp:post_type": { $: "attachment" },
-            "wp:post_password": { $: "" },
-            "wp:is_sticky": 0,
-            "wp:attachment_url": { $: post.image || "" },
-            "wp:postmeta": [{
-              "wp:meta_key": { $: "_wp_attached_file" },
-              "wp:meta_value": { $: attachment_file }
-            }, {
-              "wp:meta_key": { $: "_wp_attachment_image_alt" },
-              "wp:meta_value": { $: post.title }
-            }]
-          }
-        ]
-        items.push(...post_with_thumbnail)
       })
 
     const data = {
