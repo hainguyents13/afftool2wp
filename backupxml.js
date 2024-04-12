@@ -94,7 +94,7 @@ try {
         }
         content = content.split('%comparison_table%').join("")
         const $ = cheerio.load(content)
-        if ($.find('body').text() != "") {
+        if ($('body').text() != "") {
           let attachment_file = ""
           if (post.image.indexOf('amazon.com') > -1) {
             try {
