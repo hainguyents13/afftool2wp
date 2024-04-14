@@ -30,7 +30,7 @@ do
     cd /web/$f/
     node backupxml.js $ip $id
     mv backup.xml $dir/out/$f.xml
-    zip -r "$dir/out/$f_uploads.zip" /web/$f/upload
+    zip -r $dir/out/$f.zip /web/$f/upload
     echo "[!] $f: Backup saved to $dir/out/$f.xml"
   fi
 done
