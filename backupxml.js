@@ -96,10 +96,10 @@ try {
         const $ = cheerio.load(content)
         if ($('body').text() != "") {
           let attachment_file = ""
-          if (post.image.indexOf('amazon.com') > -1) {
-            attachment_file = post.image
-          } else {
+          if (post.image.indexOf('/') == 0) {
             attachment_file = urljoin(domain, post.image)
+          } else {
+            attachment_file = post.image
           }
 
           // replace images src urls
@@ -111,7 +111,6 @@ try {
           })
 
           content = $('body').html()
-
           const post_id = start_id
           start_id = start_id + 2
 
