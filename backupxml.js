@@ -102,6 +102,16 @@ try {
             attachment_file = urljoin(domain, post.image)
           }
 
+          // replace images src urls
+          $('image').each(img => {
+            const src = img.attr('src')
+            if (src.indexof('/') == 0) {
+              img.attr('src', src.replace('/upload', '/wp-content/uploads'))
+            }
+          })
+
+          content = $('body').html()
+
           const post_id = start_id
           start_id = start_id + 2
 
