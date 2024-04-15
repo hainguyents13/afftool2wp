@@ -27,6 +27,7 @@ do
     : ${id:=$default_id}
 
     # Backup content
+    echo "[+] Backing up content..."
     cp backupxml.js /web/$f/
     cd /web/$f/
     node backupxml.js $ip $id
@@ -34,10 +35,11 @@ do
     echo "[!] $f: Backup content saved to $dir/out/$f.xml"
 
     # Backup upload folder
+    echo "[+] Backing up upload folder..."
     cd /web/$f/upload
     zip -rq $f.zip .
     mv $f.zip $dir/out/$f.zip
-    echo "[!] $f: Backup uploads saved to $dir/out/$f.zip"
+    echo "[!] $f: Backup upload saved to $dir/out/$f.zip"
 
     # Done $f
   fi
