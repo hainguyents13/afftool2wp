@@ -87,8 +87,8 @@ try {
         }
 
         // remove compare table
-        post.content = post.content.split('%comparison_table%').join("")
-        const $ = cheerio.load(post.content)
+        content = content.split('%comparison_table%').join("")
+        const $ = cheerio.load(content)
         if ($('body').text() != "") {
           console.log("⭐ ", post.title)
           console.log($('body').html())
