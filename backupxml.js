@@ -103,7 +103,7 @@ try {
           }
 
           console.log("⭐ ", post.title)
-          console.log(attachment_file, post.image)
+          console.log(attachment_file, post.image, typeof attachment_file, typeof post.image)
           console.log(" ")
 
           // replace images src urls
