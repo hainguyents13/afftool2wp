@@ -103,6 +103,8 @@ try {
             attachment_file = post.image
           }
 
+          console.log(attachment_file)
+
           // replace images src urls
           $('img').each((_i, img) => {
             const src = $(img).attr('src')
