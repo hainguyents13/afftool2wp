@@ -111,7 +111,8 @@ try {
           // remove undefined h2
           let d = false
           $("h2").each((_i, h2) => {
-            console.log($(h2), d, !$(h2).text() && !d)
+            const text = $(h2).text()
+            console.log(text, typeof text, text == 'undefined', !t, d, !$(h2).text() && !d, !t && !d)
             if (!$(h2).text() && !d) {
               console.log($('body').html())
               d = true
