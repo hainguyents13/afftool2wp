@@ -104,6 +104,7 @@ try {
 
           console.log("⭐ ", post.title)
           console.log(attachment_file, post.image)
+          console.log(" ")
 
           // replace images src urls
           $('img').each((_i, img) => {
