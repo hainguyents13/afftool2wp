@@ -103,7 +103,7 @@ try {
             attachment_file = post.image
           }
 
-          console.log(attachment_file)
+          console.log(attachment_file, post.image)
 
           // replace images src urls
           $('img').each((_i, img) => {
