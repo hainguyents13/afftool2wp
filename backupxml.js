@@ -28,10 +28,9 @@ function sectionsToContent({ meta_content = "", sections = [] }) {
   sections.sort((a, b) => a.sort - b.sort)
   for (const section of sections) {
     const is_comparison_table = section.id == "compare"
-    if (is_comparison_table) {
-      content += `<p>%comparison_table%</p>`
-    } else {
-      content += `<h2>${section.title}</h2>${section.content}`
+    if (!is_comparison_table) {
+      content += section.title ? `<h2>${section.title}</h2>` : ""
+      content += section.content ? section.content : ""
     }
   }
   return content
@@ -86,12 +85,8 @@ try {
             })
         }
 
-        // remove compare table
-        content = content.split('%comparison_table%').join("")
         const $ = cheerio.load(content)
         if ($('body').text() != "") {
-          console.log("⭐ ", post.title)
-
           const date_string = moment(post.created_at).utcOffset(0).toString()
           const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
           let creator = ""
@@ -107,16 +102,6 @@ try {
           } else {
             attachment_file = post.image
           }
-
-          // remove undefined h2
-          let d = false
-          $("h2").each((_i, h2) => {
-            const text = $(h2).text()
-            if (text == 'undefined' && !d) {
-              console.log($('body').html())
-              d = true
-            }
-          })
 
           // replace images src urls
           $('img').each((_i, img) => {
