@@ -150,40 +150,42 @@ try {
               }]
             },
             // featured image
-            {
-              title: { $: post.title },
-              link: urljoin(domain, post.meta_slug),
-              pubDate: date_string,
-              "dc:creator": { $: creator },
-              guid: {
-                "@isPermaLink": "fase",
-                $: post.image || ""
-              },
-              description: "",
-              "content:encoded": { $: "" },
-              "excerpt:encoded": { $: "" },
-              "wp:post_id": post_id + 1,
-              "wp:post_date": { $: date_format },
-              "wp:post_date_gmt": { $: date_format },
-              "wp:post_modified": { $: date_format },
-              "wp:post_modified_gmt": { $: date_format },
-              "wp:comment_status": { $: 'open' },
-              "wp:post_name": { $: post.meta_slug.split('/').join('') },
-              "wp:post_parent": post_id,
-              "wp:ping_status": { $: 'closed' },
-              "wp:status": { $: 'inherit' },
-              "wp:post_type": { $: "attachment" },
-              "wp:post_password": { $: "" },
-              "wp:is_sticky": 0,
-              "wp:attachment_url": { $: post.image || "" },
-              "wp:postmeta": [{
-                "wp:meta_key": { $: "_wp_attached_file" },
-                "wp:meta_value": { $: attachment_file }
-              }, {
-                "wp:meta_key": { $: "_wp_attachment_image_alt" },
-                "wp:meta_value": { $: post.title }
-              }]
-            }
+            attachment_file
+              ? {
+                title: { $: post.title },
+                link: urljoin(domain, post.meta_slug),
+                pubDate: date_string,
+                "dc:creator": { $: creator },
+                guid: {
+                  "@isPermaLink": "fase",
+                  $: post.image || ""
+                },
+                description: "",
+                "content:encoded": { $: "" },
+                "excerpt:encoded": { $: "" },
+                "wp:post_id": post_id + 1,
+                "wp:post_date": { $: date_format },
+                "wp:post_date_gmt": { $: date_format },
+                "wp:post_modified": { $: date_format },
+                "wp:post_modified_gmt": { $: date_format },
+                "wp:comment_status": { $: 'open' },
+                "wp:post_name": { $: post.meta_slug.split('/').join('') },
+                "wp:post_parent": post_id,
+                "wp:ping_status": { $: 'closed' },
+                "wp:status": { $: 'inherit' },
+                "wp:post_type": { $: "attachment" },
+                "wp:post_password": { $: "" },
+                "wp:is_sticky": 0,
+                "wp:attachment_url": { $: post.image || "" },
+                "wp:postmeta": [{
+                  "wp:meta_key": { $: "_wp_attached_file" },
+                  "wp:meta_value": { $: attachment_file }
+                }, {
+                  "wp:meta_key": { $: "_wp_attachment_image_alt" },
+                  "wp:meta_value": { $: post.title }
+                }]
+              }
+              : false
           ]
           items.push(...post_with_thumbnail)
         }
