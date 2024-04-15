@@ -109,7 +109,7 @@ try {
           }
 
           // replace images src urls
-          $('img').each(img => {
+          $('img').each((_i, img) => {
             const src = $(img).attr('src')
             console.log("➡️ src", src)
             if (src && src.indexOf('/upload') == 0) {
