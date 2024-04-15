@@ -71,20 +71,9 @@ try {
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ]
       .map((post, i) => {
-        if (i > 0) {
-          return null
-        }
-
-        const date_string = moment(post.created_at).utcOffset(0).toString()
-        const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
-        let creator = ""
-        if (post._type == "review") {
-          creator = post.authors & post.authors.length ? post.authors[0].username : "admin"
-        } else {
-          creator = post.author ? post.author.username : "admin"
-        }
-
         let content = post.content
+
+        // plain content from sections
         if (settings.edit_mode != 'block') {
           content = post._type == "review"
             ? sectionsToContent({
@@ -96,10 +85,21 @@ try {
               sections: post.content_blocks
             })
         }
-        content = content.split('%comparison_table%').join("")
-        const $ = cheerio.load(content)
+
+        // remove compare table
+        post.content = post.content.split('%comparison_table%').join("")
+        const $ = cheerio.load(post.content)
         console.log($('body').html())
         if ($('body').text() != "") {
+          const date_string = moment(post.created_at).utcOffset(0).toString()
+          const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
+          let creator = ""
+          if (post._type == "review") {
+            creator = post.authors & post.authors.length ? post.authors[0].username : "admin"
+          } else {
+            creator = post.author ? post.author.username : "admin"
+          }
+
           let attachment_file = ""
           if (post.image.indexOf('/') == 0) {
             attachment_file = urljoin(domain, post.image)
