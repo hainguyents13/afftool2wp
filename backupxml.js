@@ -217,7 +217,7 @@ try {
             width: 100,
             title: settings.page_title,
           },
-          item: items.map(Boolean)
+          item: items.filter(Boolean)
         },
       }
     }
