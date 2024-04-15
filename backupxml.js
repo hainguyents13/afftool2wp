@@ -102,10 +102,6 @@ try {
             attachment_file = post.image
           }
 
-          console.log("⭐ ", post.title)
-          console.log(attachment_file, post.image, typeof attachment_file, typeof post.image)
-          console.log(" ")
-
           // replace images src urls
           $('img').each((_i, img) => {
             const src = $(img).attr('src')
@@ -153,7 +149,7 @@ try {
               }]
             },
             // featured image
-            attachment_file
+            attachment_file && attachment_file.indexOf('undefined') < -1
               ? {
                 title: { $: post.title },
                 link: urljoin(domain, post.meta_slug),
