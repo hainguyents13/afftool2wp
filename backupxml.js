@@ -89,8 +89,9 @@ try {
         // remove compare table
         post.content = post.content.split('%comparison_table%').join("")
         const $ = cheerio.load(post.content)
-        console.log($('body').html())
         if ($('body').text() != "") {
+          console.log("⭐ ", post.title)
+          console.log($('body').html())
           const date_string = moment(post.created_at).utcOffset(0).toString()
           const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
           let creator = ""
