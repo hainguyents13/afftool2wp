@@ -31,14 +31,15 @@ do
     cd /web/$f/
     node backupxml.js $ip $id
     mv backup.xml $dir/out/$f.xml
+    echo "[!] $f: Backup content saved to $dir/out/$f.xml"
 
     # Backup upload folder
-    cd /web/$f/upload
-    zip -r $f.zip .
-    mv $f.zip $dir/out/$f.zip
+    # cd /web/$f/upload
+    # zip -r $f.zip .
+    # mv $f.zip $dir/out/$f.zip
+    # echo "[!] $f: Backup uploads saved to $dir/out/$f.zip"
 
     # Done $f
-    echo "[!] $f: Backup saved to $dir/out/$f.xml"
   fi
 done
 
