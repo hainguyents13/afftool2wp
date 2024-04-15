@@ -104,11 +104,11 @@ try {
 
           // replace images src urls
           $('img').each(img => {
-            const src = img.attr('src')
+            const src = $(img).attr('src')
             if (src.indexof('/') == 0) {
               console.log(src)
-              img.attr('src', src.replace('/upload', '/wp-content/uploads'))
-              console.log("=> ", img.attr('src'))
+              $(img).attr('src', src.replace('/upload', '/wp-content/uploads'))
+              console.log("=> ", $(img).attr('src'))
             }
           })
 
