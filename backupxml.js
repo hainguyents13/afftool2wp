@@ -62,7 +62,6 @@ try {
     }
     const { reviews } = await ReviewList(default_list_agrs);
     const { posts } = await PostList(default_list_agrs);
-    // console.log(reviews.length, posts.length)
     let start_id = Number(_start_id || 1)
     const items = [];
     [
@@ -103,6 +102,7 @@ try {
             attachment_file = post.image
           }
 
+          console.log("⭐ ", post.title)
           console.log(attachment_file, post.image)
 
           // replace images src urls
