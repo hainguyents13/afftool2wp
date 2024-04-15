@@ -35,7 +35,7 @@ do
 
     # Backup upload folder
     cd /web/$f/upload
-    zip -r $f.zip .
+    zip -rq $f.zip .
     mv $f.zip $dir/out/$f.zip
     echo "[!] $f: Backup uploads saved to $dir/out/$f.zip"
 
