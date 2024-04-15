@@ -32,7 +32,7 @@ do
     cd /web/$f/
     node backupxml.js $ip $id
     mv backup.xml $dir/out/$f.xml
-    echo "✅ $f: Backup content saved to $dir/out/$f.xml"
+    echo "✔ $f: Backup content saved to $dir/out/$f.xml"
 
     # Backup upload folder
     echo ""
@@ -40,7 +40,7 @@ do
     cd /web/$f/upload
     zip -rq $f.zip .
     mv $f.zip $dir/out/$f.zip
-    echo "✅ $f: Backup upload saved to $dir/out/$f.zip"
+    echo "✔ $f: Backup upload saved to $dir/out/$f.zip"
 
     # Done $f
   fi
