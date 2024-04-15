@@ -109,10 +109,12 @@ try {
           }
 
           // remove undefined h2
+          let d = false
           $("h2").each((_i, h2) => {
             console.log($(h2).text())
-            if ($(h2).text() == "") {
+            if (typeof $(h2).text() == 'undefined' && !d) {
               console.log($('body').html())
+              d = true
             }
           })
 
