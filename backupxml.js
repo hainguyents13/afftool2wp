@@ -91,7 +91,7 @@ try {
         const $ = cheerio.load(content)
         if ($('body').text() != "") {
           console.log("⭐ ", post.title)
-          console.log($('body').html())
+
           const date_string = moment(post.created_at).utcOffset(0).toString()
           const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
           let creator = ""
@@ -108,19 +108,23 @@ try {
             attachment_file = post.image
           }
 
+          // remove undefined h2
+          $("h2").each((_i, h2) => {
+            console.log($(h2).text())
+            if ($(h2).text() == "") {
+              console.log($('body').html())
+            }
+          })
+
           // replace images src urls
           $('img').each((_i, img) => {
             const src = $(img).attr('src')
-            console.log("➡️ src", src)
             if (src && src.indexOf('/upload') == 0) {
-              console.log(src)
               $(img).attr('src', src.replace('/upload', '/wp-content/uploads'))
-              console.log("=> ", $(img).attr('src'))
             }
           })
 
           content = $('body').html()
-          console.log(content)
           const post_id = start_id
           start_id = start_id + 2
 
