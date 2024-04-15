@@ -111,7 +111,7 @@ try {
           // remove undefined h2
           let d = false
           $("h2").each((_i, h2) => {
-            console.log($(h2).text())
+            console.log($(h2).text(), d.toString())
             if (!$(h2).text() && !d) {
               console.log($('body').html())
               d = true
