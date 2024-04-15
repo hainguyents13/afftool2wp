@@ -71,6 +71,10 @@ try {
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ]
       .map((post, i) => {
+        if (i > 0) {
+          return null
+        }
+
         const date_string = moment(post.created_at).utcOffset(0).toString()
         const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
         let creator = ""
@@ -94,6 +98,7 @@ try {
         }
         content = content.split('%comparison_table%').join("")
         const $ = cheerio.load(content)
+        console.log($('body').html())
         if ($('body').text() != "") {
           let attachment_file = ""
           if (post.image.indexOf('/') == 0) {
@@ -114,6 +119,7 @@ try {
           })
 
           content = $('body').html()
+          console.log(content)
           const post_id = start_id
           start_id = start_id + 2
 
@@ -219,7 +225,7 @@ try {
             width: 100,
             title: settings.page_title,
           },
-          item: items
+          item: items.map(Boolean)
         },
       }
     }
