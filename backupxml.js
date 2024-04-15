@@ -36,8 +36,8 @@ function sectionsToContent({ meta_content = "", sections = [] }) {
   return content
 }
 
-console.log("[!] Replacement IP", alt_ip)
-console.log("[!] Start from ID", _start_id)
+console.log("-> Replacement IP", alt_ip)
+console.log("-> Start from ID", _start_id)
 console.log("")
 // console.log('Starting BackupXML process...')
 try {
