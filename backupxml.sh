@@ -26,11 +26,18 @@ do
     read id
     : ${id:=$default_id}
 
+    # Backup content
     cp backupxml.js /web/$f/
     cd /web/$f/
     node backupxml.js $ip $id
     mv backup.xml $dir/out/$f.xml
-    zip -r $dir/out/$f.zip /web/$f/upload
+
+    # Backup upload folder
+    # cd /web/$f/upload
+    # zip -r $f.zip .
+    # mv $f.zip $dir/out/$f.zip
+
+    # Done $f
     echo "[!] $f: Backup saved to $dir/out/$f.xml"
   fi
 done

@@ -103,7 +103,7 @@ try {
           }
 
           // replace images src urls
-          $('image').each(img => {
+          $('img').each(img => {
             const src = img.attr('src')
             if (src.indexof('/') == 0) {
               console.log(src)
