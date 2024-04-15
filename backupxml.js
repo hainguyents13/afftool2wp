@@ -112,7 +112,7 @@ try {
           let d = false
           $("h2").each((_i, h2) => {
             const text = $(h2).text()
-            console.log(text, typeof text, text == 'undefined', !t, d, !$(h2).text() && !d, !t && !d)
+            console.log(text, typeof text, text == 'undefined', !text, d, !$(h2).text() && !d, !text && !d)
             if (!$(h2).text() && !d) {
               console.log($('body').html())
               d = true
