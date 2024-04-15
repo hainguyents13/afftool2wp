@@ -149,7 +149,7 @@ try {
               }]
             },
             // featured image
-            attachment_file && attachment_file.indexOf('undefined') < -1
+            attachment_file && attachment_file.indexOf('undefined') == -1
               ? {
                 title: { $: post.title },
                 link: urljoin(domain, post.meta_slug),
