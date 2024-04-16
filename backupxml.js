@@ -149,16 +149,9 @@ async function init(out_folder, web_folder) {
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop("")
+  s.stop()
   if (!result.error) {
-    const note = `
-    - Total: ${result.total}\n
-    - Exported: ${result.exported}\n
-    - Old domain: ${result.total}\n
-    - New domain: ${result.total}\n
-    - Start ID: ${result.total}\n
-    - Exported file: ${out_file_path}
-    `
+    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain}\n- New domain: ${result.new_domain}\n- Exported file: ${out_file_path}`
     p.note(note, "Result:")
     p.log.info("Done!")
   } else {
@@ -210,153 +203,153 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
     const { reviews } = await ReviewList(default_list_agrs);
     const { posts } = await PostList(default_list_agrs);
 
-    const items = [];
-    [
+    const items = [
       ...reviews.map(item => Object.assign(item, { _type: "review" })),
       ...posts.map(item => Object.assign(item, { _type: "post" }))
-    ]
-      .map((post, i) => {
-        stats.total += 1
-        let content = post.content
+    ];
+    stats.total_posts = items.length
+    items.map((post, i) => {
+      stats.exported += 1
+      let content = post.content
 
-        // plain content from sections
-        if (settings.edit_mode != 'block') {
-          content = post._type == "review"
-            ? sectionsToContent({
-              meta_content: post.meta_content,
-              sections: post.custom_sections
-            })
-            : sectionsToContent({
-              meta_content: post.meta_content.main.content,
-              sections: post.content_blocks
-            })
+      // plain content from sections
+      if (settings.edit_mode != 'block') {
+        content = post._type == "review"
+          ? sectionsToContent({
+            meta_content: post.meta_content,
+            sections: post.custom_sections
+          })
+          : sectionsToContent({
+            meta_content: post.meta_content.main.content,
+            sections: post.content_blocks
+          })
+      }
+
+      const $ = cheerio.load(content)
+      if ($('body').text() != "") {
+        const date_string = moment(post.created_at).utcOffset(0).toString()
+        const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
+        let creator = ""
+        if (post._type == "review") {
+          creator = post.authors & post.authors.length ? post.authors[0].username : "admin"
+        } else {
+          creator = post.author ? post.author.username : "admin"
         }
 
-        const $ = cheerio.load(content)
-        if ($('body').text() != "") {
-          const date_string = moment(post.created_at).utcOffset(0).toString()
-          const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
-          let creator = ""
-          if (post._type == "review") {
-            creator = post.authors & post.authors.length ? post.authors[0].username : "admin"
-          } else {
-            creator = post.author ? post.author.username : "admin"
+        const attachment_file = replaceDomain(post.image, old_domain)
+
+        // replace images src urls
+        $('img').each((_i, img) => {
+          const src = $(img).attr('src')
+          if (src) {
+            let new_src = src
+            if (src.indexOf('/upload') == 0) {
+              new_src = src.replace('/upload', '/wp-content/uploads')
+            }
+            new_src = replaceDomain(new_src, new_domain)
+            $(img).attr('src', new_src)
           }
+        })
 
-          const attachment_file = replaceDomain(post.image, old_domain)
+        // replace amz tags
+        $('a').each((_i, a) => {
+          const href = $(a).attr('href')
+          if (href && href.indexOf("amazon.com") > -1) {
+            const [new_href] = href.split('?')
+            $(a).attr('href', new_href)
+          }
+        })
 
-          // replace images src urls
-          $('img').each((_i, img) => {
-            const src = $(img).attr('src')
-            if (src) {
-              let new_src = src
-              if (src.indexOf('/upload') == 0) {
-                new_src = src.replace('/upload', '/wp-content/uploads')
-              }
-              new_src = replaceDomain(new_src, new_domain)
-              $(img).attr('src', new_src)
-            }
-          })
+        content = $('body').html()
+        const post_id = start_id
+        start_id = start_id + 2
 
-          // replace amz tags
-          $('a').each((_i, a) => {
-            const href = $(a).attr('href')
-            if (href && href.indexOf("amazon.com") > -1) {
-              const [new_href] = href.split('?')
-              $(a).attr('href', new_href)
-            }
-          })
-
-          content = $('body').html()
-          const post_id = start_id
-          start_id = start_id + 2
-
-          const post_with_thumbnail = [
-            // post
-            {
+        const post_with_thumbnail = [
+          // post
+          {
+            title: { $: post.title },
+            link: urljoin(new_domain, post.meta_slug),
+            pubDate: date_string,
+            "dc:creator": { $: creator },
+            guid: {
+              "@isPermaLink": "fase",
+              $: urljoin(new_domain, '/?p=' + post_id)
+            },
+            description: { $: post.meta_desc.split("%").join("") },
+            "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
+            "content:encoded": { $: content },
+            "wp:post_id": post_id,
+            "wp:post_date": { $: date_format },
+            "wp:post_date_gmt": { $: date_format },
+            "wp:post_modified": { $: date_format },
+            "wp:post_modified_gmt": { $: date_format },
+            "wp:comment_status": { $: 'open' },
+            "wp:ping_status": { $: 'open' },
+            "wp:post_name": { $: post.meta_slug.split('/').join('') },
+            "wp:status": { $: 'publish' },
+            "wp:post_type": { $: "post" },
+            "wp:post_password": { $: "" },
+            "wp:is_sticky": 0,
+            "wp:postmeta": [{
+              "wp:meta_key": { $: "_edit_last" },
+              "wp:meta_value": { $: 1 }
+            }, {
+              "wp:meta_key": { $: "_thumbnail_id" },
+              "wp:meta_value": { $: post_id + 1 }
+            }],
+            ...(
+              post.category
+                ? {
+                  category: {
+                    "@domain": "category",
+                    "@nicename": post.category.path.split('/').join(''),
+                    $: post.category.name
+                  }
+                }
+                : {}
+            )
+          },
+          // featured image
+          attachment_file
+            ? {
               title: { $: post.title },
               link: urljoin(new_domain, post.meta_slug),
               pubDate: date_string,
               "dc:creator": { $: creator },
               guid: {
                 "@isPermaLink": "fase",
-                $: urljoin(new_domain, '/?p=' + post_id)
+                $: post.image || ""
               },
-              description: { $: post.meta_desc.split("%").join("") },
-              "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
-              "content:encoded": { $: content },
-              "wp:post_id": post_id,
+              description: "",
+              "content:encoded": { $: "" },
+              "excerpt:encoded": { $: "" },
+              "wp:post_id": post_id + 1,
               "wp:post_date": { $: date_format },
               "wp:post_date_gmt": { $: date_format },
               "wp:post_modified": { $: date_format },
               "wp:post_modified_gmt": { $: date_format },
               "wp:comment_status": { $: 'open' },
-              "wp:ping_status": { $: 'open' },
               "wp:post_name": { $: post.meta_slug.split('/').join('') },
-              "wp:status": { $: 'publish' },
-              "wp:post_type": { $: "post" },
+              "wp:post_parent": post_id,
+              "wp:ping_status": { $: 'closed' },
+              "wp:status": { $: 'inherit' },
+              "wp:post_type": { $: "attachment" },
               "wp:post_password": { $: "" },
               "wp:is_sticky": 0,
+              "wp:attachment_url": { $: post.image || "" },
               "wp:postmeta": [{
-                "wp:meta_key": { $: "_edit_last" },
-                "wp:meta_value": { $: 1 }
+                "wp:meta_key": { $: "_wp_attached_file" },
+                "wp:meta_value": { $: attachment_file }
               }, {
-                "wp:meta_key": { $: "_thumbnail_id" },
-                "wp:meta_value": { $: post_id + 1 }
-              }],
-              ...(
-                post.category
-                  ? {
-                    category: {
-                      "@domain": "category",
-                      "@nicename": post.category.path.split('/').join(''),
-                      $: post.category.name
-                    }
-                  }
-                  : {}
-              )
-            },
-            // featured image
-            attachment_file
-              ? {
-                title: { $: post.title },
-                link: urljoin(new_domain, post.meta_slug),
-                pubDate: date_string,
-                "dc:creator": { $: creator },
-                guid: {
-                  "@isPermaLink": "fase",
-                  $: post.image || ""
-                },
-                description: "",
-                "content:encoded": { $: "" },
-                "excerpt:encoded": { $: "" },
-                "wp:post_id": post_id + 1,
-                "wp:post_date": { $: date_format },
-                "wp:post_date_gmt": { $: date_format },
-                "wp:post_modified": { $: date_format },
-                "wp:post_modified_gmt": { $: date_format },
-                "wp:comment_status": { $: 'open' },
-                "wp:post_name": { $: post.meta_slug.split('/').join('') },
-                "wp:post_parent": post_id,
-                "wp:ping_status": { $: 'closed' },
-                "wp:status": { $: 'inherit' },
-                "wp:post_type": { $: "attachment" },
-                "wp:post_password": { $: "" },
-                "wp:is_sticky": 0,
-                "wp:attachment_url": { $: post.image || "" },
-                "wp:postmeta": [{
-                  "wp:meta_key": { $: "_wp_attached_file" },
-                  "wp:meta_value": { $: attachment_file }
-                }, {
-                  "wp:meta_key": { $: "_wp_attachment_image_alt" },
-                  "wp:meta_value": { $: post.title }
-                }]
-              }
-              : false
-          ]
-          items.push(...post_with_thumbnail)
-        }
-      })
+                "wp:meta_key": { $: "_wp_attachment_image_alt" },
+                "wp:meta_value": { $: post.title }
+              }]
+            }
+            : false
+        ]
+        items.push(...post_with_thumbnail)
+      }
+    })
 
     const data = {
       rss: {
@@ -390,8 +383,6 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         },
       }
     }
-
-    stats.exported = items.filter(Boolean).length
 
     const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
     fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
