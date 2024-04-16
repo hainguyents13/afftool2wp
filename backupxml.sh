@@ -5,7 +5,7 @@ if [ ! -d out ]; then
 fi
 
 next="n"
-while (( $next == "n" || $next == "N" ))
+while (( $next == "y" || $next == "Y" ))
 do
   echo "[?] Enter folder name:"
   read f
