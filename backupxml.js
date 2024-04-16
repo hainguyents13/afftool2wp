@@ -128,8 +128,8 @@ async function init(out_folder, web_folder) {
         message: 'You must provide a starting ID to restore backed-up posts. \nWithout a starting ID, there could be conflicts or data overlap.',
         placeholder: 'Start ID...',
         validate: (value) => {
-          if (value && !url_pattern.test(value)) {
-            return 'Please enter a valid domain or ip address.';
+          if (value && !/^[0-9]*$/.test(value)) {
+            return 'Start ID must be a number';
           }
         },
       })
