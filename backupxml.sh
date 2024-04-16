@@ -34,7 +34,7 @@ do
     echo "-> Backing up content..."
     cp backupxml.js /web/$f/
     cd /web/$f/
-    yarn add @clack/prompts picocolors
+    yarn add --dev @clack/prompts picocolors adm-zip
     node backupxml.js $ip $id
     mv backup.xml $dir/out/$f.xml
     echo "✔ $f: Backup content saved to $dir/out/$f.xml"

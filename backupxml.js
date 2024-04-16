@@ -1,63 +1,76 @@
 const p = require('@clack/prompts');
 const { setTimeout } = require('node:timers/promises');
 const color = require('picocolors');
+const AdmZip = require('adm-zip')
 
-async function main() {
-  console.clear();
+function ZipSite({ new_file, backup_path }) {
+  const zip = new AdmZip();
+  for (const file of backup_files) {
+    const file_path = path.join(process.cwd(), file)
+    const is_folder = file_path.endsWith('/') || file_path.endsWith('\\')
+    if (is_folder) {
+      zip.addLocalFolder(file_path)
+    } else {
+      zip.addLocalFile(file_path)
+    }
+  }
+  const zip_des = path.join(backup_path, new_file)
+  try {
+    zip.writeZip(zip_des);
+    console.log('Backup Site completed!');
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-  await setTimeout(1000);
-
-  p.intro(`${color.bgCyan(color.black(' create-app '))}`);
-
-  const project = await p.group(
+async function doBackup() {
+  const backup = await p.group({
+    folder: () =>
+      p.text({
+        message: 'Folder name?',
+        placeholder: 'Ex: affiliatecms',
+        validate: (value) => {
+          if (!value) return 'Please enter folder name.';
+          const folder = path.resolve('../' + value + '/')
+          if (!fs.pathExistsSync(folder)) {
+            return `Folder ${folder} does not exists!`
+          }
+        },
+      }),
+    old_domain: () =>
+      p.text({
+        message: 'If old domain is not valid, you need to specify an alternative domain \nor IP address with port number in oder to download post images',
+        placeholder: 'https://example.com or http://123.456.789.8000',
+      }),
+  },
     {
-      path: () =>
-        p.text({
-          message: 'Where should we create your project?',
-          placeholder: './sparkling-solid',
-          validate: (value) => {
-            if (!value) return 'Please enter a path.';
-            if (value[0] !== '.') return 'Please enter a relative path.';
-          },
-        }),
-      password: () =>
-        p.password({
-          message: 'Provide a password',
-          validate: (value) => {
-            if (!value) return 'Please enter a password.';
-            if (value.length < 5) return 'Password should have at least 5 characters.';
-          },
-        }),
-      type: ({ results }) =>
-        p.select({
-          message: `Pick a project type within "${results.path}"`,
-          initialValue: 'ts',
-          maxItems: 5,
-          options: [
-            { value: 'ts', label: 'TypeScript' },
-            { value: 'js', label: 'JavaScript' },
-            { value: 'rust', label: 'Rust' },
-            { value: 'go', label: 'Go' },
-            { value: 'python', label: 'Python' },
-            { value: 'coffee', label: 'CoffeeScript', hint: 'oh no' },
-          ],
-        }),
-      tools: () =>
-        p.multiselect({
-          message: 'Select additional tools.',
-          initialValues: ['prettier', 'eslint'],
-          options: [
-            { value: 'prettier', label: 'Prettier', hint: 'recommended' },
-            { value: 'eslint', label: 'ESLint', hint: 'recommended' },
-            { value: 'stylelint', label: 'Stylelint' },
-            { value: 'gh-action', label: 'GitHub Action' },
-          ],
-        }),
-      install: () =>
+      onCancel: () => {
+        p.cancel('Operation cancelled.');
+        process.exit(0);
+      },
+    }
+  )
+
+  const { folder } = backup
+  if (folder) {
+    root_folder = path.resolve("../" + folder + '/')
+    const s = p.spinner()
+    s.start("Backing up to XML...")
+    s.stop("Exported!")
+    p.note(path.join(path.resolve(folder), "backup.xml"), "XML saved to:")
+  }
+
+  await askIfContinue()
+}
+
+async function askIfContinue() {
+  const ask = await p.group(
+    {
+      continue: ({ results }) =>
         p.confirm({
-          message: 'Install dependencies?',
-          initialValue: false,
-        }),
+          message: "Continue?",
+          initialValue: true
+        })
     },
     {
       onCancel: () => {
@@ -67,21 +80,21 @@ async function main() {
     }
   );
 
-  if (project.install) {
-    const s = p.spinner();
-    s.start('Installing via pnpm');
-    await setTimeout(2500);
-    s.stop('Installed via pnpm');
+  if (ask.continue) {
+    await doBackup()
   }
-
-  let nextSteps = `cd ${project.path}        \n${project.install ? '' : 'pnpm install\n'}pnpm dev`;
-
-  p.note(nextSteps, 'Next steps.');
-
-  p.outro(`Problems? ${color.underline(color.cyan('https://example.com/issues'))}`);
 }
 
-main().catch(console.error);
+async function main() {
+  p.intro(`${pc.bgBlue(pc.black(" AffiliateCMS Backup to Wordpress "))}`)
+
+  await doBackup()
+
+  p.log.info("Done!")
+  p.outro(`Problems? Please contact us at ${pc.underline(pc.cyan('https://affiliatecms.com'))}`);
+}
+
+main().catch(console.error)
 
 // const fs = require("fs-extra")
 // const { create } = require('xmlbuilder2');
