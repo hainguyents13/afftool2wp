@@ -162,8 +162,10 @@ async function init(out_folder, web_folder) {
   s.stop("XML file generated!")
 
   const s_upload = p.spinner()
-  s_upload.start("Backing up upload folder...")
-  Zip({ out_upload_path })
+  s_upload.start("Backing up upload folder...");
+  (async () => {
+    Zip({ out_upload_path })
+  })()
   s_upload.stop("Upload folder packed!")
 
   if (!result.error) {
