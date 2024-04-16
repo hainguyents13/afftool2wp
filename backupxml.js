@@ -74,6 +74,7 @@ function replaceDomain(url, domain) {
     const parsed = new URL(url)
     return urljoin(domain, parsed.pathname + parsed.url)
   } catch (e) {
+    console.log("")
     console.log(url, typeof url, e)
     return url
   }
@@ -141,7 +142,7 @@ async function doBackup(out_folder, web_folder) {
   const out_file_path = path.join(out_folder, `${web_folder}.xml`)
 
   const s = p.spinner()
-  s.start("Backing up to XML...")
+  s.start("Backing up to XML...\n")
   const result = await startBackup({
     out_file_path,
     old_domain: backup.old_domain,
