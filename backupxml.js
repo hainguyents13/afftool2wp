@@ -25,11 +25,9 @@ function ZipSite({ new_file, backup_path }) {
   }
 }
 
-let web_folder = ""
-let out_folder = ""
 const url_pattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)*:\d*/g;
 
-async function doBackup() {
+async function doBackup(out_folder, web_folder) {
   const backup = await p.group({
     change_domain: () =>
       p.confirm({
@@ -101,13 +99,11 @@ async function askIfContinue() {
 
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
-  out_folder = path.join(root_folder, "out")
-
   console.clear()
 
   p.intro(`${color.bgYellow(color.black(` AffiliateCMS Backup to Wordpress (${backup_folder}) `))}`)
 
-  // await doBackup()
+  await doBackup(root_folder, backup_folder)
 
   p.log.info("Done!")
   p.outro(`Problems? Please contact us at ${color.underline(color.cyan('https://affiliatecms.com'))}`);
