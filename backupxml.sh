@@ -22,6 +22,10 @@ do
     read ip
     : ${ip:=$default_ip}
 
+    echo "[?] Enter new domain"
+    read ip
+    : ${ip:=$default_ip}
+
     echo "[?] Enter Start from ID (Default: 10000):"
     read id
     : ${id:=$default_id}

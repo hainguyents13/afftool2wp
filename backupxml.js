@@ -146,7 +146,18 @@ try {
               }, {
                 "wp:meta_key": { $: "_thumbnail_id" },
                 "wp:meta_value": { $: post_id + 1 }
-              }]
+              }],
+              ...(
+                post.category
+                  ? {
+                    category: {
+                      "@domain": "category",
+                      "@nicename": post.category.path.split('/').join(''),
+                      $: post.category.name
+                    }
+                  }
+                  : {}
+              )
             },
             // featured image
             attachment_file && attachment_file.indexOf('undefined') == -1
