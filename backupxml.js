@@ -4,6 +4,41 @@ const color = require('picocolors');
 const AdmZip = require('adm-zip')
 const fs = require('fs-extra')
 const path = require('path')
+const { create } = require('xmlbuilder2');
+const config = require(process.cwd() + '/config/app');
+const database = require(process.cwd() + '/modules/app/helpers/database');
+const urljoin = require('url-join')
+const moment = require('moment')
+const cheerio = require('cheerio')
+
+// ==================================
+global.__version = config.app.version;
+global.__modules = `${__dirname}/modules`;
+global.__config = `${__dirname}/config`;
+global.__root = __dirname;
+
+// ==================================
+const ReviewList = require(__modules + '/page/helpers/ReviewList');
+const PostList = require(__modules + '/page/helpers/PostList');
+const ReviewModel = require(__modules + '/review/models/Review')
+const ProductwModel = require(__modules + '/product/models/Product')
+const CateModel = require(__modules + '/category/models/Category')
+const PostModel = require(__modules + '/post/models/Post')
+const UserModel = require(__modules + '/user/models/User')
+const { get_settings } = require(__modules + '/app/helpers/system-setting');
+
+function sectionsToContent({ meta_content = "", sections = [] }) {
+  let content = meta_content && meta_content.main ? meta_content.main : ''
+  sections.sort((a, b) => a.sort - b.sort)
+  for (const section of sections) {
+    const is_comparison_table = section.id == "compare"
+    if (!is_comparison_table) {
+      content += section.title ? `<h2>${section.title}</h2>` : ""
+      content += section.content ? section.content : ""
+    }
+  }
+  return content
+}
 
 function ZipSite({ new_file, backup_path }) {
   const zip = new AdmZip();
@@ -84,35 +119,14 @@ async function doBackup(out_folder, web_folder) {
     }
   )
 
+  const out_file_path = path.join(out_folder, `${web_folder}.xml`)
+
   const s = p.spinner()
   s.start("Backing up to XML...")
+  await startBackup({ out_file_path })
   s.stop("Exported!")
-  p.note(path.join(out_folder, "backup.xml"), "XML saved to:")
-
-  // await askIfContinue()
+  p.note(out_file_path, "Backup files saved to:")
 }
-
-// async function askIfContinue() {
-//   const ask = await p.group(
-//     {
-//       continue: ({ results }) =>
-//         p.confirm({
-//           message: "Continue?",
-//           initialValue: true
-//         })
-//     },
-//     {
-//       onCancel: () => {
-//         p.cancel('Operation cancelled.');
-//         process.exit(0);
-//       },
-//     }
-//   );
-
-//   if (ask.continue) {
-//     await doBackup()
-//   }
-// }
 
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
@@ -125,3 +139,206 @@ async function main() {
 }
 
 main().catch(console.error)
+
+async function startBackup({ out_file_path }) {
+  try {
+    database.connect();
+    const users = await UserModel
+      .find({}, { username: true, fullname: true, email: true })
+      .lean()
+      .exec()
+    const { main: settings } = await get_settings(["main"])
+
+    const domain = alt_ip != '-' ? alt_ip : settings.domain
+    const default_list_agrs = {
+      cond: {},
+      req: {
+        query: {
+          page: 1
+        },
+      },
+      customPageSize: Infinity
+    }
+    const { reviews } = await ReviewList(default_list_agrs);
+    const { posts } = await PostList(default_list_agrs);
+    let start_id = Number(_start_id || 1)
+    const items = [];
+    [
+      ...reviews.map(item => Object.assign(item, { _type: "review" })),
+      ...posts.map(item => Object.assign(item, { _type: "post" }))
+    ]
+      .map((post, i) => {
+        let content = post.content
+
+        // plain content from sections
+        if (settings.edit_mode != 'block') {
+          content = post._type == "review"
+            ? sectionsToContent({
+              meta_content: post.meta_content,
+              sections: post.custom_sections
+            })
+            : sectionsToContent({
+              meta_content: post.meta_content.main.content,
+              sections: post.content_blocks
+            })
+        }
+
+        const $ = cheerio.load(content)
+        if ($('body').text() != "") {
+          const date_string = moment(post.created_at).utcOffset(0).toString()
+          const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
+          let creator = ""
+          if (post._type == "review") {
+            creator = post.authors & post.authors.length ? post.authors[0].username : "admin"
+          } else {
+            creator = post.author ? post.author.username : "admin"
+          }
+
+          let attachment_file = ""
+          if (post.image.indexOf('/') == 0) {
+            attachment_file = urljoin(domain, post.image)
+          } else {
+            attachment_file = post.image
+          }
+
+          // replace images src urls
+          $('img').each((_i, img) => {
+            const src = $(img).attr('src')
+            if (src && scolor.indexOf('/upload') == 0) {
+              $(img).attr('src', scolor.replace('/upload', '/wp-content/uploads'))
+            }
+          })
+
+          content = $('body').html()
+          const post_id = start_id
+          start_id = start_id + 2
+
+          const post_with_thumbnail = [
+            // post
+            {
+              title: { $: post.title },
+              link: urljoin(domain, post.meta_slug),
+              pubDate: date_string,
+              "dc:creator": { $: creator },
+              guid: {
+                "@isPermaLink": "fase",
+                $: urljoin(settings.domain, '/?p=' + post_id)
+              },
+              description: { $: post.meta_decolor.split("%").join("") },
+              "excerpt:encoded": { $: post.meta_decolor.split("%").join("") },
+              "content:encoded": { $: content },
+              "wp:post_id": post_id,
+              "wp:post_date": { $: date_format },
+              "wp:post_date_gmt": { $: date_format },
+              "wp:post_modified": { $: date_format },
+              "wp:post_modified_gmt": { $: date_format },
+              "wp:comment_status": { $: 'open' },
+              "wp:ping_status": { $: 'open' },
+              "wp:post_name": { $: post.meta_slug.split('/').join('') },
+              "wp:status": { $: 'publish' },
+              "wp:post_type": { $: "post" },
+              "wp:post_password": { $: "" },
+              "wp:is_sticky": 0,
+              "wp:postmeta": [{
+                "wp:meta_key": { $: "_edit_last" },
+                "wp:meta_value": { $: 1 }
+              }, {
+                "wp:meta_key": { $: "_thumbnail_id" },
+                "wp:meta_value": { $: post_id + 1 }
+              }],
+              ...(
+                post.category
+                  ? {
+                    category: {
+                      "@domain": "category",
+                      "@nicename": post.category.path.split('/').join(''),
+                      $: post.category.name
+                    }
+                  }
+                  : {}
+              )
+            },
+            // featured image
+            attachment_file && attachment_file.indexOf('undefined') == -1
+              ? {
+                title: { $: post.title },
+                link: urljoin(domain, post.meta_slug),
+                pubDate: date_string,
+                "dc:creator": { $: creator },
+                guid: {
+                  "@isPermaLink": "fase",
+                  $: post.image || ""
+                },
+                description: "",
+                "content:encoded": { $: "" },
+                "excerpt:encoded": { $: "" },
+                "wp:post_id": post_id + 1,
+                "wp:post_date": { $: date_format },
+                "wp:post_date_gmt": { $: date_format },
+                "wp:post_modified": { $: date_format },
+                "wp:post_modified_gmt": { $: date_format },
+                "wp:comment_status": { $: 'open' },
+                "wp:post_name": { $: post.meta_slug.split('/').join('') },
+                "wp:post_parent": post_id,
+                "wp:ping_status": { $: 'closed' },
+                "wp:status": { $: 'inherit' },
+                "wp:post_type": { $: "attachment" },
+                "wp:post_password": { $: "" },
+                "wp:is_sticky": 0,
+                "wp:attachment_url": { $: post.image || "" },
+                "wp:postmeta": [{
+                  "wp:meta_key": { $: "_wp_attached_file" },
+                  "wp:meta_value": { $: attachment_file }
+                }, {
+                  "wp:meta_key": { $: "_wp_attachment_image_alt" },
+                  "wp:meta_value": { $: post.title }
+                }]
+              }
+              : false
+          ]
+          items.push(...post_with_thumbnail)
+        }
+      })
+
+    const data = {
+      rss: {
+        "@xmlns:excerpt": "http://wordpress.org/export/1.2/excerpt/",
+        "@xmlns:content": "http://purl.org/rss/1.0/modules/content/",
+        "@xmlns:wfw": "http://wellformedweb.org/CommentAPI/",
+        "@xmlns:dc": "http://purl.org/dc/elements/1.1/",
+        "@xmlns:wp": "http://wordpress.org/export/1.2/",
+        channel: {
+          title: { $: settings.page_title },
+          link: settings.domain,
+          description: settings.description,
+          language: "en-US",
+          "wp:wxr_version": 1.2,
+          "wp:base_site_url": settings.domain,
+          "wp:base_blog_url": settings.domain,
+          "wp:author": users.map((author, i) => ({
+            "wp:author_id": i,
+            "wp:author_login": { $: author.username },
+            "wp:author_email": { $: author.email || "" },
+            "wp:author_display_name": { $: author.fullname },
+            "wp:author_first_name": { $: author.fullname },
+          })),
+          image: {
+            url: urljoin(domain, settings.favicon),
+            height: 100,
+            width: 100,
+            title: settings.page_title,
+          },
+          item: items.filter(Boolean)
+        },
+      }
+    }
+    const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
+    fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
+
+    // exit
+    process.exit(0)
+  } catch (e) {
+    console.error(e.message);
+    throw new Error('Error connect Mongoose!');
+  }
+}
