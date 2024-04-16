@@ -142,14 +142,27 @@ async function doBackup(out_folder, web_folder) {
 
   const s = p.spinner()
   s.start("Backing up to XML...")
-  await startBackup({
+  const result = await startBackup({
     out_file_path,
     old_domain: backup.old_domain,
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop("Exported!")
-  p.note(out_file_path, "Backup files saved to:")
+  if (!result.error) {
+    s.stop()
+    const note = `
+      - Total: ${result.total}\n
+      - Exported: ${result.exported}\n
+      - Old domain: ${result.total}\n
+      - New domain: ${result.total}\n
+      - Start ID: ${result.total}\n
+      - Exported file: ${out_file_path}
+    `
+    p.note(note, "Result:")
+    p.log.info("Done!")
+  } else {
+    p.log.error("Error:" + result.error)
+  }
 }
 
 async function main() {
@@ -158,7 +171,6 @@ async function main() {
 
   await doBackup(root_folder, backup_folder)
 
-  p.log.info("Done!")
   p.outro(`Problems? Please contact us at ${color.underline(color.cyan('https://affiliatecms.com'))}`);
 }
 
@@ -268,8 +280,8 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
                 "@isPermaLink": "fase",
                 $: urljoin(new_domain, '/?p=' + post_id)
               },
-              description: { $: post.meta_description.split("%").join("") },
-              "excerpt:encoded": { $: post.meta_description.split("%").join("") },
+              description: { $: post.meta_desc.split("%").join("") },
+              "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
               "content:encoded": { $: content },
               "wp:post_id": post_id,
               "wp:post_date": { $: date_format },
