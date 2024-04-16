@@ -81,7 +81,7 @@ async function askIfContinue() {
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
   out_folder = path.join(root_folder, "out")
-  web_folder = path.join(root_folder, backup_folder)
+  web_folder = process.cwd()
   console.clear()
 
   console.log("out_folder", out_folder)
