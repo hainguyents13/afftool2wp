@@ -38,7 +38,7 @@ async function doBackup(out_folder, web_folder) {
       if (!results.change_domain) return;
       return p.text({
         message: 'Old domain:',
-        placeholder: 'Ex: https://example.com or http://123.456.789.8000',
+        placeholder: 'Ex: https://example.com or http://123.456.789.8000...',
         validate: (value) => {
           if (value && !url_pattern.test(value)) {
             return 'Please enter a valid domain or ip address.';
@@ -50,7 +50,24 @@ async function doBackup(out_folder, web_folder) {
       if (!results.change_domain) return;
       return p.text({
         message: 'New domain:',
-        placeholder: 'Ex: https://example.com or http://123.456.789.8000',
+        placeholder: 'Ex: https://example.com or http://123.456.789.8000...',
+        validate: (value) => {
+          if (value && !url_pattern.test(value)) {
+            return 'Please enter a valid domain or ip address.';
+          }
+        },
+      })
+    },
+    has_posts: () =>
+      p.confirm({
+        message: `Does your new website already has some posts?`,
+        initialValue: false
+      }),
+    start_id: ({ results }) => {
+      if (!results.has_posts) return;
+      return p.text({
+        message: 'You must provide a starting ID to restore backed-up posts. \nWithout a starting ID, there could be conflicts or data overlap.',
+        placeholder: 'Start ID...',
         validate: (value) => {
           if (value && !url_pattern.test(value)) {
             return 'Please enter a valid domain or ip address.';
@@ -72,35 +89,33 @@ async function doBackup(out_folder, web_folder) {
   s.stop("Exported!")
   p.note(path.join(out_folder, "backup.xml"), "XML saved to:")
 
-  await askIfContinue()
+  // await askIfContinue()
 }
 
-async function askIfContinue() {
-  const ask = await p.group(
-    {
-      continue: ({ results }) =>
-        p.confirm({
-          message: "Continue?",
-          initialValue: true
-        })
-    },
-    {
-      onCancel: () => {
-        p.cancel('Operation cancelled.');
-        process.exit(0);
-      },
-    }
-  );
+// async function askIfContinue() {
+//   const ask = await p.group(
+//     {
+//       continue: ({ results }) =>
+//         p.confirm({
+//           message: "Continue?",
+//           initialValue: true
+//         })
+//     },
+//     {
+//       onCancel: () => {
+//         p.cancel('Operation cancelled.');
+//         process.exit(0);
+//       },
+//     }
+//   );
 
-  if (ask.continue) {
-    await doBackup()
-  }
-}
+//   if (ask.continue) {
+//     await doBackup()
+//   }
+// }
 
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
-  console.clear()
-
   p.intro(`${color.bgYellow(color.black(` AffiliateCMS Backup to Wordpress (${backup_folder}) `))}`)
 
   await doBackup(root_folder, backup_folder)
