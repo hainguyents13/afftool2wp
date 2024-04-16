@@ -72,7 +72,9 @@ function replaceDomain(url, domain) {
   }
   try {
     const parsed = new URL(url)
-    return urljoin(domain, parsed.pathname + parsed.url)
+    console.log(domain, parsed.pathname, parsed.search)
+    const new_url = urljoin(domain, parsed.pathname + parsed.search)
+    return new_url
   } catch (e) {
     console.log("")
     console.log(url, typeof url, e)
@@ -173,6 +175,7 @@ async function main() {
   await doBackup(root_folder, backup_folder)
 
   p.outro(`Problems? Please contact us at ${color.underline(color.cyan('https://affiliatecms.com'))}`);
+  process.exit(0)
 }
 
 async function startBackup({ out_file_path, old_domain, new_domain, start_id }) {
