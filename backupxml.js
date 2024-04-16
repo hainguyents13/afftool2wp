@@ -9,7 +9,6 @@ const config = require(process.cwd() + '/config/app');
 const urljoin = require('url-join')
 const moment = require('moment')
 const cheerio = require('cheerio')
-const { setTimeout } = require('node:timers/promises');
 const mongoose = require('mongoose');
 const db_config = require(process.cwd() + '/config/database');
 
