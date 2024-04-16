@@ -149,7 +149,7 @@ async function init(out_folder, web_folder) {
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop()
+  s.stop("")
   if (!result.error) {
     const note = `
     - Total: ${result.total}\n
