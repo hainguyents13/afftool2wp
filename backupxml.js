@@ -60,6 +60,25 @@ function ZipSite({ new_file, backup_path }) {
   }
 }
 
+function replaceDomain(url, domain) {
+  if (!url || url == "undefined") {
+    return ""
+  }
+  if (url.indexOf('amazon.com') > -1) {
+    return url
+  }
+  if (url.indexOf('/') == 0) {
+    return urljoin(domain, url)
+  }
+  try {
+    const parsed = new URL(url)
+    return urljoin(domain, parsed.pathname + parsed.url)
+  } catch (e) {
+    console.log(e)
+    return url
+  }
+}
+
 const url_pattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)*:\d*/g;
 
 async function doBackup(out_folder, web_folder) {
@@ -143,9 +162,16 @@ async function main() {
   p.outro(`Problems? Please contact us at ${color.underline(color.cyan('https://affiliatecms.com'))}`);
 }
 
-main().catch(console.error)
-
 async function startBackup({ out_file_path, old_domain, new_domain, start_id }) {
+  const stats = {
+    total: 0,
+    exported: 0,
+    out_file_path,
+    old_domain,
+    new_domain,
+    start_id
+  }
+
   try {
     database.connect();
     const users = await UserModel
@@ -157,8 +183,6 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
     old_domain = old_domain ? old_domain : settings.domain
     new_domain = new_domain ? new_domain : settings.domain
     start_id = Number(start_id || 1)
-
-    console.log(out_file_path, old_domain, new_domain, start_id)
 
     const default_list_agrs = {
       cond: {},
@@ -178,6 +202,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ]
       .map((post, i) => {
+        stats.total += 1
         let content = post.content
 
         // plain content from sections
@@ -204,18 +229,27 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             creator = post.author ? post.author.username : "admin"
           }
 
-          let attachment_file = ""
-          if (post.image.indexOf('/') == 0) {
-            attachment_file = urljoin(domain, post.image)
-          } else {
-            attachment_file = post.image
-          }
+          const attachment_file = replaceDomain(post.image)
 
           // replace images src urls
           $('img').each((_i, img) => {
             const src = $(img).attr('src')
-            if (src && src.indexOf('/upload') == 0) {
-              $(img).attr('src', src.replace('/upload', '/wp-content/uploads'))
+            if (src) {
+              let new_src = src
+              if (src.indexOf('/upload') == 0) {
+                new_src = src.replace('/upload', '/wp-content/uploads')
+              }
+              new_src = replaceDomain(new_src, new_domain)
+              $(img).attr('src', new_src)
+            }
+          })
+
+          // replace amz tags
+          $('a').each((_i, a) => {
+            const href = $(a).attr('href')
+            if (href && href.indexOf("amazon.com") > -1) {
+              const [new_href] = href.split('?')
+              $(a).attr('href', new_href)
             }
           })
 
@@ -227,15 +261,15 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             // post
             {
               title: { $: post.title },
-              link: urljoin(domain, post.meta_slug),
+              link: urljoin(new_domain, post.meta_slug),
               pubDate: date_string,
               "dc:creator": { $: creator },
               guid: {
                 "@isPermaLink": "fase",
-                $: urljoin(settings.domain, '/?p=' + post_id)
+                $: urljoin(new_domain, '/?p=' + post_id)
               },
-              description: { $: post.meta_decolor.split("%").join("") },
-              "excerpt:encoded": { $: post.meta_decolor.split("%").join("") },
+              description: { $: post.meta_description.split("%").join("") },
+              "excerpt:encoded": { $: post.meta_description.split("%").join("") },
               "content:encoded": { $: content },
               "wp:post_id": post_id,
               "wp:post_date": { $: date_format },
@@ -269,10 +303,10 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
               )
             },
             // featured image
-            attachment_file && attachment_file.indexOf('undefined') == -1
+            attachment_file
               ? {
                 title: { $: post.title },
-                link: urljoin(domain, post.meta_slug),
+                link: urljoin(new_domain, post.meta_slug),
                 pubDate: date_string,
                 "dc:creator": { $: creator },
                 guid: {
@@ -342,13 +376,17 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         },
       }
     }
+
+    stats.exported = tems.filter(Boolean)
+
     const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
     fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
 
-    // exit
-    process.exit(0)
+    return stats
   } catch (e) {
     console.error(e.message);
-    throw new Error('Error connect Mongoose!');
+    return { error: e.message }
   }
 }
+
+main().catch(console.error)
