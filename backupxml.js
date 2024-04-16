@@ -204,12 +204,13 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
     const { reviews } = await ReviewList(default_list_agrs);
     const { posts } = await PostList(default_list_agrs);
 
-    const items = [
+    const items = []
+    const all_items = [
       ...reviews.map(item => Object.assign(item, { _type: "review" })),
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ];
-    stats.total_posts = items.length
-    items.map((post, i) => {
+    stats.total_posts = all_items.length
+    all_items.map((post, i) => {
       stats.exported += 1
       let content = post.content
 
@@ -279,83 +280,83 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         const post_with_thumbnail = [
           // post
           {
-            // title: { $: post.title },
-            // link: urljoin(new_domain, post.meta_slug),
-            // pubDate: date_string,
-            // "dc:creator": { $: creator },
-            // guid: {
-            //   "@isPermaLink": "fase",
-            //   $: urljoin(new_domain, '/?p=' + post_id)
-            // },
-            // description: { $: post.meta_desc.replace("%keyword%", "") },
-            // "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
-            // "content:encoded": { $: content.replace("%keyword%", "") },
-            // "wp:post_id": post_id,
-            // "wp:post_date": { $: date_format },
-            // "wp:post_date_gmt": { $: date_format },
-            // "wp:post_modified": { $: date_format },
-            // "wp:post_modified_gmt": { $: date_format },
-            // "wp:comment_status": { $: 'open' },
-            // "wp:ping_status": { $: 'open' },
-            // "wp:post_name": { $: post.meta_slug.split('/').join('') },
-            // "wp:status": { $: 'publish' },
-            // "wp:post_type": { $: "post" },
-            // "wp:post_password": { $: "" },
-            // "wp:is_sticky": 0,
-            // "wp:postmeta": [{
-            //   "wp:meta_key": { $: "_edit_last" },
-            //   "wp:meta_value": { $: 1 }
-            // }, {
-            //   "wp:meta_key": { $: "_thumbnail_id" },
-            //   "wp:meta_value": { $: post_id + 1 }
-            // }],
-            // ...(
-            //   post.category
-            //     ? {
-            //       category: {
-            //         "@domain": "category",
-            //         "@nicename": post.category.path.split('/').join(''),
-            //         $: post.category.name
-            //       }
-            //     }
-            //     : {}
-            // )
+            title: { $: post.title },
+            link: urljoin(new_domain, post.meta_slug),
+            pubDate: date_string,
+            "dc:creator": { $: creator },
+            guid: {
+              "@isPermaLink": "fase",
+              $: urljoin(new_domain, '/?p=' + post_id)
+            },
+            description: { $: post.meta_desc.replace("%keyword%", "") },
+            "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
+            "content:encoded": { $: content.replace("%keyword%", "") },
+            "wp:post_id": post_id,
+            "wp:post_date": { $: date_format },
+            "wp:post_date_gmt": { $: date_format },
+            "wp:post_modified": { $: date_format },
+            "wp:post_modified_gmt": { $: date_format },
+            "wp:comment_status": { $: 'open' },
+            "wp:ping_status": { $: 'open' },
+            "wp:post_name": { $: post.meta_slug.split('/').join('') },
+            "wp:status": { $: 'publish' },
+            "wp:post_type": { $: "post" },
+            "wp:post_password": { $: "" },
+            "wp:is_sticky": 0,
+            "wp:postmeta": [{
+              "wp:meta_key": { $: "_edit_last" },
+              "wp:meta_value": { $: 1 }
+            }, {
+              "wp:meta_key": { $: "_thumbnail_id" },
+              "wp:meta_value": { $: post_id + 1 }
+            }],
+            ...(
+              post.category
+                ? {
+                  category: {
+                    "@domain": "category",
+                    "@nicename": post.category.path.split('/').join(''),
+                    $: post.category.name
+                  }
+                }
+                : {}
+            )
           },
           // featured image
           attachment_file
             ? {
-              // title: { $: post.title },
-              // link: urljoin(new_domain, post.meta_slug),
-              // pubDate: date_string,
-              // "dc:creator": { $: creator },
-              // guid: {
-              //   "@isPermaLink": "fase",
-              //   $: post.image || ""
-              // },
-              // description: "",
-              // "content:encoded": { $: "" },
-              // "excerpt:encoded": { $: "" },
-              // "wp:post_id": post_id + 1,
-              // "wp:post_date": { $: date_format },
-              // "wp:post_date_gmt": { $: date_format },
-              // "wp:post_modified": { $: date_format },
-              // "wp:post_modified_gmt": { $: date_format },
-              // "wp:comment_status": { $: 'open' },
-              // "wp:post_name": { $: post.meta_slug.split('/').join('') },
-              // "wp:post_parent": post_id,
-              // "wp:ping_status": { $: 'closed' },
-              // "wp:status": { $: 'inherit' },
-              // "wp:post_type": { $: "attachment" },
-              // "wp:post_password": { $: "" },
-              // "wp:is_sticky": 0,
-              // "wp:attachment_url": { $: post.image || "" },
-              // "wp:postmeta": [{
-              //   "wp:meta_key": { $: "_wp_attached_file" },
-              //   "wp:meta_value": { $: attachment_file }
-              // }, {
-              //   "wp:meta_key": { $: "_wp_attachment_image_alt" },
-              //   "wp:meta_value": { $: post.title }
-              // }]
+              title: { $: post.title },
+              link: urljoin(new_domain, post.meta_slug),
+              pubDate: date_string,
+              "dc:creator": { $: creator },
+              guid: {
+                "@isPermaLink": "fase",
+                $: post.image || ""
+              },
+              description: "",
+              "content:encoded": { $: "" },
+              "excerpt:encoded": { $: "" },
+              "wp:post_id": post_id + 1,
+              "wp:post_date": { $: date_format },
+              "wp:post_date_gmt": { $: date_format },
+              "wp:post_modified": { $: date_format },
+              "wp:post_modified_gmt": { $: date_format },
+              "wp:comment_status": { $: 'open' },
+              "wp:post_name": { $: post.meta_slug.split('/').join('') },
+              "wp:post_parent": post_id,
+              "wp:ping_status": { $: 'closed' },
+              "wp:status": { $: 'inherit' },
+              "wp:post_type": { $: "attachment" },
+              "wp:post_password": { $: "" },
+              "wp:is_sticky": 0,
+              "wp:attachment_url": { $: post.image || "" },
+              "wp:postmeta": [{
+                "wp:meta_key": { $: "_wp_attached_file" },
+                "wp:meta_value": { $: attachment_file }
+              }, {
+                "wp:meta_key": { $: "_wp_attachment_image_alt" },
+                "wp:meta_value": { $: post.title }
+              }]
             }
             : false
         ]
