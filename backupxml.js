@@ -391,7 +391,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
       }
     }
 
-    stats.exported = items.filter(Boolean)
+    stats.exported = items.filter(Boolean).length
 
     const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
     fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
