@@ -289,7 +289,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             },
             description: { $: post.meta_desc.replace("%keyword%", "") },
             "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
-            // "content:encoded": { $: content.replace("%keyword%", "") },
+            "content:encoded": { $: content.replace("%keyword%", "") },
             "wp:post_id": post_id,
             "wp:post_date": { $: date_format },
             "wp:post_date_gmt": { $: date_format },
@@ -309,17 +309,17 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
               "wp:meta_key": { $: "_thumbnail_id" },
               "wp:meta_value": { $: post_id + 1 }
             }],
-            ...(
-              post.category
-                ? {
-                  category: {
-                    "@domain": "category",
-                    "@nicename": post.category.path.split('/').join(''),
-                    $: post.category.name
-                  }
-                }
-                : {}
-            )
+            // ...(
+            //   post.category
+            //     ? {
+            //       category: {
+            //         "@domain": "category",
+            //         "@nicename": post.category.path.split('/').join(''),
+            //         $: post.category.name
+            //       }
+            //     }
+            //     : {}
+            // )
           },
           // featured image
           attachment_file
