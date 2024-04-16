@@ -24,23 +24,11 @@ function ZipSite({ new_file, backup_path }) {
   }
 }
 
-let root_folder = ""
-let backup_folder = ""
+let web_folder = ""
+let out_folder = ""
 
 async function doBackup() {
   const backup = await p.group({
-    folder: () =>
-      p.text({
-        message: 'Folder name?',
-        placeholder: 'Ex: affiliatecms',
-        validate: (value) => {
-          if (!value) return 'Please enter folder name.';
-          const folder = path.resolve('../' + value + '/')
-          if (!fs.pathExistsSync(folder)) {
-            return `Folder ${folder} does not exists!`
-          }
-        },
-      }),
     old_domain: () =>
       p.text({
         message: 'If old domain is not valid, you need to specify an alternative domain \nor IP address with port number in order to download post images',
@@ -90,11 +78,14 @@ async function askIfContinue() {
 }
 
 async function main() {
-  const [_root_folder, _backup_folder] = process.argv.slice(2);
-  root_folder = _root_folder
-  backup_folder = _backup_folder
-
+  const [root_folder, backup_folder] = process.argv.slice(2);
+  out_folder = path.join(_root_folder, "out")
+  web_folder = path.join(_root_folder, _backup_folder)
   console.clear()
+
+  console.log("out_folder", out_folder)
+  console.log("web_folder", web_folder)
+
 
   p.intro(`${color.bgYellow(color.black(` AffiliateCMS Backup to Wordpress (${_backup_folder}) `))}`)
 
