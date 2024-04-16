@@ -27,14 +27,39 @@ function ZipSite({ new_file, backup_path }) {
 
 let web_folder = ""
 let out_folder = ""
+const url_pattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)*:\d*/g;
 
 async function doBackup() {
   const backup = await p.group({
-    old_domain: () =>
-      p.text({
-        message: 'If old domain is not valid, you need to specify an alternative domain \nor IP address with port number in order to download post images',
-        placeholder: 'https://example.com or http://123.456.789.8000',
+    change_domain: () =>
+      p.confirm({
+        message: `Do you want to restore the website to a new domain?`,
+        initialValue: false
       }),
+    old_domain: ({ results }) => {
+      if (!results.change_domain) reutrn;
+      return p.text({
+        message: 'Old domain:',
+        placeholder: 'Ex: https://example.com or http://123.456.789.8000',
+        validate: (value) => {
+          if (value && !url_pattern.test(value)) {
+            return 'Please enter a valid domain or ip address.';
+          }
+        },
+      })
+    },
+    new_domain: ({ results }) => {
+      if (!results.change_domain) reutrn;
+      return p.text({
+        message: 'New domain:',
+        placeholder: 'Ex: https://example.com or http://123.456.789.8000',
+        validate: (value) => {
+          if (value && !url_pattern.test(value)) {
+            return 'Please enter a valid domain or ip address.';
+          }
+        },
+      })
+    }
   },
     {
       onCancel: () => {
@@ -44,14 +69,10 @@ async function doBackup() {
     }
   )
 
-  const { folder } = backup
-  if (folder) {
-    root_folder = path.resolve("../" + folder + '/')
-    const s = p.spinner()
-    s.start("Backing up to XML...")
-    s.stop("Exported!")
-    p.note(path.join(path.resolve(folder), "backup.xml"), "XML saved to:")
-  }
+  const s = p.spinner()
+  s.start("Backing up to XML...")
+  s.stop("Exported!")
+  p.note(path.join(out_folder, "backup.xml"), "XML saved to:")
 
   await askIfContinue()
 }
@@ -81,14 +102,10 @@ async function askIfContinue() {
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
   out_folder = path.join(root_folder, "out")
-  web_folder = process.cwd()
+
   console.clear()
 
-  console.log("out_folder", out_folder)
-  console.log("web_folder", web_folder)
-
-
-  p.intro(`${color.bgYellow(color.black(` AffiliateCMS Backup to Wordpress (${_backup_folder}) `))}`)
+  p.intro(`${color.bgYellow(color.black(` AffiliateCMS Backup to Wordpress (${backup_folder}) `))}`)
 
   // await doBackup()
 
