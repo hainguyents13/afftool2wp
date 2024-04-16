@@ -151,6 +151,7 @@ async function init(out_folder, web_folder) {
 
   const s = p.spinner()
   s.start("Generating XML...")
+  await setTimeout(1000)
   const result = await startBackupContent({
     out_file_path,
     old_domain: backup.old_domain,
@@ -161,10 +162,11 @@ async function init(out_folder, web_folder) {
 
   const s_upload = p.spinner()
   s_upload.start("Backing up upload folder...");
-  await setTimeout(2000)
+  await setTimeout(1000)
   Zip({ out_upload_path })
   s_upload.stop("Upload folder packed!")
 
+  await setTimeout(1000)
   if (!result.error) {
     const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
     p.note(note, "Export result:")
