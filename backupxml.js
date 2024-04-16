@@ -61,7 +61,7 @@ function ZipSite({ new_file, backup_path }) {
 }
 
 function replaceDomain(url, domain) {
-  if (!url || url == "undefined") {
+  if (!url || url == "undefined" || !domain) {
     return ""
   }
   if (url.indexOf('amazon.com') > -1) {
@@ -72,7 +72,6 @@ function replaceDomain(url, domain) {
   }
   try {
     const parsed = new URL(url)
-    console.log(domain, parsed.pathname, parsed.search)
     const new_url = urljoin(domain, parsed.pathname + parsed.search)
     return new_url
   } catch (e) {
@@ -245,7 +244,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             creator = post.author ? post.author.username : "admin"
           }
 
-          const attachment_file = replaceDomain(post.image)
+          const attachment_file = replaceDomain(post.image, old_domain)
 
           // replace images src urls
           $('img').each((_i, img) => {
