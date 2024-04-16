@@ -143,6 +143,7 @@ async function init(out_folder, web_folder) {
 
   const s = p.spinner()
   s.start("Backing up to XML...")
+  console.log()
   const result = await startBackup({
     out_file_path,
     old_domain: backup.old_domain,
@@ -395,8 +396,9 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
       }
     }
 
-    const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
-    fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
+    fs.writeJSONSync(out_file_path.replace("xml", "json"), data)
+    // const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
+    // fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
 
     return stats
   } catch (e) {
