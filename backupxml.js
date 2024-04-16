@@ -265,7 +265,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         const post_id = start_id
         start_id = start_id + 2
 
-        console.log("⭐ ", post.title)
+        // console.log("⭐ ", post.title)
         if (
           content.indexOf("%keyword%") > -1 ||
           post.title.indexOf("%keyword%") > -1 ||
@@ -279,14 +279,14 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         const post_with_thumbnail = [
           // post
           {
-            title: { $: post.title },
-            link: urljoin(new_domain, post.meta_slug),
-            pubDate: date_string,
-            "dc:creator": { $: creator },
-            guid: {
-              "@isPermaLink": "fase",
-              $: urljoin(new_domain, '/?p=' + post_id)
-            },
+            // title: { $: post.title },
+            // link: urljoin(new_domain, post.meta_slug),
+            // pubDate: date_string,
+            // "dc:creator": { $: creator },
+            // guid: {
+            //   "@isPermaLink": "fase",
+            //   $: urljoin(new_domain, '/?p=' + post_id)
+            // },
             // description: { $: post.meta_desc.replace("%keyword%", "") },
             // "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
             // "content:encoded": { $: content.replace("%keyword%", "") },
