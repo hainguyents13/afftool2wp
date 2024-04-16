@@ -287,9 +287,9 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
               "@isPermaLink": "fase",
               $: urljoin(new_domain, '/?p=' + post_id)
             },
-            description: { $: post.meta_desc.split("%").join("") },
-            "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
-            "content:encoded": { $: content.split("%").join("") },
+            description: { $: post.meta_desc.replace("%keyword%", "") },
+            "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
+            // "content:encoded": { $: content.replace("%keyword%", "") },
             "wp:post_id": post_id,
             "wp:post_date": { $: date_format },
             "wp:post_date_gmt": { $: date_format },
@@ -397,8 +397,8 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
     }
 
     fs.writeJSONSync(out_file_path.replace("xml", "json"), data)
-    // const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
-    // fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
+    const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
+    fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
 
     return stats
   } catch (e) {
