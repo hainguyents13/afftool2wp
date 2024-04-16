@@ -1,6 +1,6 @@
-import * as p from '@clack/prompts';
-import { setTimeout } from 'node:timers/promises';
-import color from 'picocolors';
+const p = require('@clack/prompts');
+const { setTimeout } = require('node:timers/promises');
+const color = require('picocolors');
 
 async function main() {
   console.clear();
