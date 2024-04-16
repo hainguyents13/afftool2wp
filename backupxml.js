@@ -11,6 +11,20 @@ const urljoin = require('url-join')
 const moment = require('moment')
 const cheerio = require('cheerio')
 
+const mongoose = require('mongoose');
+const db_config = require(process.cwd() + '/config/database');
+
+const connectDb = async () => {
+  return mongoose
+    .connect(db_config.url, db_config.options)
+    .then(() => {
+    })
+    .catch((e) => {
+      console.error(e.message);
+      throw new Error('Error connect Mongoose!');
+    });
+};
+
 // ==================================
 global.__version = config.app.version;
 global.__modules = `${__dirname}/modules`;
@@ -141,8 +155,13 @@ async function init(out_folder, web_folder) {
 
   const out_file_path = path.join(out_folder, `${web_folder}.xml`)
 
+  const s_db = p.spinner()
+  s_db.start("Connecting database...")
+  await connectDb()
+  s_db.stop("Connected!")
+
   const s = p.spinner()
-  s.start("Backing up to XML...")
+  s.start("Generating XML...")
   console.log()
   const result = await startBackup({
     out_file_path,
@@ -150,10 +169,11 @@ async function init(out_folder, web_folder) {
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop("Exported!")
+  s.stop("Generated!")
+
   if (!result.error) {
-    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain}\n- New domain: ${result.new_domain}\n- Exported file: ${out_file_path}`
-    p.note(note, "Result:")
+    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported file: ${out_file_path}`
+    p.note(note, "Export result:")
     p.log.info("Done!")
   } else {
     p.log.error("Error: " + result.error)
@@ -181,7 +201,6 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
   }
 
   try {
-    database.connect();
     const users = await UserModel
       .find({}, { username: true, fullname: true, email: true })
       .lean()
@@ -209,7 +228,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
       ...reviews.map(item => Object.assign(item, { _type: "review" })),
       ...posts.map(item => Object.assign(item, { _type: "post" }))
     ];
-    stats.total_posts = all_items.length
+    stats.total = all_items.length
     all_items.map((post, i) => {
       stats.exported += 1
       let content = post.content
@@ -397,7 +416,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
       }
     }
 
-    fs.writeJSONSync(out_file_path.replace("xml", "json"), data)
+    // fs.writeJSONSync(out_file_path.replace("xml", "json"), data)
     const xml = create({ version: "1.0", encoding: "UTF-8" }, data)
     fs.writeFileSync(out_file_path, xml.end({ prettyPrint: true }))
 
