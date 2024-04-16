@@ -6,11 +6,10 @@ const fs = require('fs-extra')
 const path = require('path')
 const { create } = require('xmlbuilder2');
 const config = require(process.cwd() + '/config/app');
-const database = require(process.cwd() + '/modules/app/helpers/database');
 const urljoin = require('url-join')
 const moment = require('moment')
 const cheerio = require('cheerio')
-
+const { setTimeout } = require('node:timers/promises');
 const mongoose = require('mongoose');
 const db_config = require(process.cwd() + '/config/database');
 
@@ -163,13 +162,12 @@ async function init(out_folder, web_folder) {
 
   const s_upload = p.spinner()
   s_upload.start("Backing up upload folder...");
-  (async () => {
-    Zip({ out_upload_path })
-  })()
+  await setTimeout(2000)
+  Zip({ out_upload_path })
   s_upload.stop("Upload folder packed!")
 
   if (!result.error) {
-    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_file_path}`
+    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
     p.note(note, "Export result:")
     p.log.info("Done!")
   } else {
