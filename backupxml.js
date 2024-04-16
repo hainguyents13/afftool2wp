@@ -149,13 +149,13 @@ async function init(out_folder, web_folder) {
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop()
+  s.stop("Exported!")
   if (!result.error) {
     const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain}\n- New domain: ${result.new_domain}\n- Exported file: ${out_file_path}`
     p.note(note, "Result:")
     p.log.info("Done!")
   } else {
-    p.log.error("Error:" + result.error)
+    p.log.error("Error: " + result.error)
   }
 }
 
@@ -277,7 +277,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             },
             description: { $: post.meta_desc.split("%").join("") },
             "excerpt:encoded": { $: post.meta_desc.split("%").join("") },
-            "content:encoded": { $: content },
+            "content:encoded": { $: content.split("%").join("") },
             "wp:post_id": post_id,
             "wp:post_date": { $: date_format },
             "wp:post_date_gmt": { $: date_format },
