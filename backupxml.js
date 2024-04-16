@@ -91,13 +91,9 @@ async function askIfContinue() {
 
 async function main() {
   const [_root_folder, _backup_folder] = process.argv.slice(2);
-  root_folder = _root_folder
-  backup_folder = _backup_folder
   console.clear()
-  console.log("-> root_folder", root_folder)
-  console.log("-> backup_folder", backup_folder)
 
-  p.intro(`${color.bgBlue(color.black(" AffiliateCMS Backup to Wordpress "))}`)
+  p.intro(`${color.bgYellow(color.black(" AffiliateCMS Backup to Wordpress "))}`)
 
   // await doBackup()
 
