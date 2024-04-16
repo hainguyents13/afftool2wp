@@ -54,23 +54,13 @@ function sectionsToContent({ meta_content = "", sections = [] }) {
   return content
 }
 
-function ZipSite({ new_file, backup_path }) {
+function Zip({ out_upload_path }) {
   const zip = new AdmZip();
-  for (const file of backup_files) {
-    const file_path = path.join(process.cwd(), file)
-    const is_folder = file_path.endsWith('/') || file_path.endsWith('\\')
-    if (is_folder) {
-      zip.addLocalFolder(file_path)
-    } else {
-      zip.addLocalFile(file_path)
-    }
-  }
-  const zip_des = path.join(backup_path, new_file)
+  zip.addLocalFolder("./upload/")
   try {
-    zip.writeZip(zip_des);
-    console.log('Backup Site completed!');
+    zip.writeZip(out_upload_path);
   } catch (e) {
-    console.log(e)
+    console.log(e.message)
   }
 }
 
@@ -154,6 +144,7 @@ async function init(out_folder, web_folder) {
   )
 
   const out_file_path = path.join(out_folder, `${web_folder}.xml`)
+  const out_upload_path = path.join(out_folder, `${web_folder}.zip`)
 
   const s_db = p.spinner()
   s_db.start("Connecting to database...")
@@ -162,13 +153,18 @@ async function init(out_folder, web_folder) {
 
   const s = p.spinner()
   s.start("Generating XML...")
-  const result = await startBackup({
+  const result = await startBackupContent({
     out_file_path,
     old_domain: backup.old_domain,
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
   s.stop("XML file generated!")
+
+  const s_upload = p.spinner()
+  s_upload.start("Backing up upload folder...")
+  Zip({ out_upload_path })
+  s_upload.stop("Upload folder packed!")
 
   if (!result.error) {
     const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported file: ${out_file_path}`
@@ -189,7 +185,7 @@ async function main() {
   process.exit(0)
 }
 
-async function startBackup({ out_file_path, old_domain, new_domain, start_id }) {
+async function startBackupContent({ out_file_path, old_domain, new_domain, start_id }) {
   const stats = {
     total: 0,
     exported: 0,
