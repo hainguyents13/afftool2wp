@@ -125,9 +125,9 @@ async function doBackup(out_folder, web_folder) {
   s.start("Backing up to XML...")
   await startBackup({
     out_file_path,
-    old_domain: results.old_domain,
-    new_domain: results.new_domain,
-    start_id: results.start_id,
+    old_domain: backup.old_domain,
+    new_domain: backup.new_domain,
+    start_id: backup.start_id,
   })
   s.stop("Exported!")
   p.note(out_file_path, "Backup files saved to:")
