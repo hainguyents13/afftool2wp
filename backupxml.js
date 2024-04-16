@@ -116,7 +116,7 @@ async function doBackup(out_folder, web_folder) {
 
 async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
-  p.intro(`${color.bgYellow(color.black(`Backing up: ${backup_folder}`))}`)
+  p.intro(`${color.bgBlue(color.black(` Backing up: ${backup_folder} `))}`)
 
   await doBackup(root_folder, backup_folder)
 
