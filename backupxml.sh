@@ -4,51 +4,22 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
-echo "[?] Folder names (etc: afftool amz_affiliate...):"
-read -a folders
-
-# yum install zip -y
-for f in ${folders[@]}
+while :
 do
-  default_ip="-"
-  default_id=10000
-  echo ""
-  echo "→ Backing up $f..."
+  echo "[?] Enter folder name:"
+  read f
   if [[ ! -d "/web/$f/" ]]; then
-    echo "❎ Folder not exists"
+    echo "❎ Folder does not exists"
   else
-    echo "[?] If domain is invalid, enter ip address with port"
-    echo "[?] Example: http://123.456.789:8001"
-    read ip
-    : ${ip:=$default_ip}
-
-    echo "[?] Enter new domain"
-    read ip
-    : ${ip:=$default_ip}
-
-    echo "[?] Enter Start from ID (Default: 10000):"
-    read id
-    : ${id:=$default_id}
-
     # Backup content
-    echo "-> Backing up content..."
     cp backupxml.js /web/$f/
     cd /web/$f/
     yarn add --dev @clack/prompts picocolors adm-zip
-    node backupxml.js $ip $id
+    node backupxml.js $dir $f
     mv backup.xml $dir/out/$f.xml
-    echo "✔ $f: Backup content saved to $dir/out/$f.xml"
-
     # Backup upload folder
-    echo ""
-    echo "-> Backing up upload folder..."
     cd /web/$f/upload
     zip -rq $f.zip .
     mv $f.zip $dir/out/$f.zip
-    echo "✔ $f: Backup upload saved to $dir/out/$f.zip"
-
-    # Done $f
   fi
 done
-
-echo "Done!"
