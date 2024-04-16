@@ -74,7 +74,7 @@ function replaceDomain(url, domain) {
     const parsed = new URL(url)
     return urljoin(domain, parsed.pathname + parsed.url)
   } catch (e) {
-    console.log(e)
+    console.log(url, typeof url, e)
     return url
   }
 }
@@ -148,15 +148,15 @@ async function doBackup(out_folder, web_folder) {
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
+  s.stop()
   if (!result.error) {
-    s.stop()
     const note = `
-      - Total: ${result.total}\n
-      - Exported: ${result.exported}\n
-      - Old domain: ${result.total}\n
-      - New domain: ${result.total}\n
-      - Start ID: ${result.total}\n
-      - Exported file: ${out_file_path}
+    - Total: ${result.total}\n
+    - Exported: ${result.exported}\n
+    - Old domain: ${result.total}\n
+    - New domain: ${result.total}\n
+    - Start ID: ${result.total}\n
+    - Exported file: ${out_file_path}
     `
     p.note(note, "Result:")
     p.log.info("Done!")
