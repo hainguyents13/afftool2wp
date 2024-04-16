@@ -75,7 +75,6 @@ function replaceDomain(url, domain) {
     const new_url = urljoin(domain, parsed.pathname + parsed.search)
     return new_url
   } catch (e) {
-    console.log("")
     console.log(url, typeof url, e)
     return url
   }
@@ -83,7 +82,7 @@ function replaceDomain(url, domain) {
 
 const url_pattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)*:\d*/g;
 
-async function doBackup(out_folder, web_folder) {
+async function init(out_folder, web_folder) {
   const backup = await p.group({
     change_domain: () =>
       p.confirm({
@@ -143,7 +142,7 @@ async function doBackup(out_folder, web_folder) {
   const out_file_path = path.join(out_folder, `${web_folder}.xml`)
 
   const s = p.spinner()
-  s.start("Backing up to XML...\n")
+  s.start("Backing up to XML...")
   const result = await startBackup({
     out_file_path,
     old_domain: backup.old_domain,
@@ -171,7 +170,7 @@ async function main() {
   const [root_folder, backup_folder] = process.argv.slice(2);
   p.intro(`${color.bgYellow(color.black(` Backing up: ${backup_folder} `))}`)
 
-  await doBackup(root_folder, backup_folder)
+  await init(root_folder, backup_folder)
 
   p.outro(`Problems? Please contact us at ${color.underline(color.cyan('https://affiliatecms.com'))}`);
   process.exit(0)
@@ -382,7 +381,7 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
             "wp:author_first_name": { $: author.fullname },
           })),
           image: {
-            url: urljoin(domain, settings.favicon),
+            url: urljoin(old_domain, settings.favicon),
             height: 100,
             width: 100,
             title: settings.page_title,
