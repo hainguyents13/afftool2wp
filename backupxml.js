@@ -125,7 +125,7 @@ async function init(out_folder, web_folder) {
     start_id: ({ results }) => {
       if (!results.has_posts) return;
       return p.text({
-        message: 'You must provide a starting ID to restore backed-up posts. \nWithout a starting ID, there could be conflicts or data overlap.',
+        message: 'You must provide a starting ID to restore backed-up posts. Without a starting ID, there could be conflicts with your existing posts',
         placeholder: 'Start ID...',
         validate: (value) => {
           if (value && !/^[0-9]*$/.test(value)) {
