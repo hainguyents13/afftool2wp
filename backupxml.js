@@ -264,6 +264,11 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         const post_id = start_id
         start_id = start_id + 2
 
+        console.log("⭐ ", post.title)
+        console.log("content ", content.indexOf("%keyword%"))
+        console.log("title ", title.indexOf("%keyword%"))
+        console.log("post.meta_desc ", post.meta_desc.indexOf("%keyword%"))
+
         const post_with_thumbnail = [
           // post
           {
