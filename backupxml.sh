@@ -4,7 +4,7 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
-npm install -g @clack picocolors
+npm install -g @clack/prompts picocolors
 
 echo "[?] Folder names (etc: afftool amz_affiliate...):"
 read -a folders
