@@ -35,7 +35,7 @@ async function doBackup(out_folder, web_folder) {
         initialValue: false
       }),
     old_domain: ({ results }) => {
-      if (!results.change_domain) reutrn;
+      if (!results.change_domain) return;
       return p.text({
         message: 'Old domain:',
         placeholder: 'Ex: https://example.com or http://123.456.789.8000',
@@ -47,7 +47,7 @@ async function doBackup(out_folder, web_folder) {
       })
     },
     new_domain: ({ results }) => {
-      if (!results.change_domain) reutrn;
+      if (!results.change_domain) return;
       return p.text({
         message: 'New domain:',
         placeholder: 'Ex: https://example.com or http://123.456.789.8000',
