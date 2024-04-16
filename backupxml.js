@@ -43,7 +43,7 @@ async function doBackup() {
       }),
     old_domain: () =>
       p.text({
-        message: 'If old domain is not valid, you need to specify an alternative domain \nor IP address with port number in oder to download post images',
+        message: 'If old domain is not valid, you need to specify an alternative domain \nor IP address with port number in order to download post images',
         placeholder: 'https://example.com or http://123.456.789.8000',
       }),
   },
@@ -93,7 +93,7 @@ async function main() {
   const [_root_folder, _backup_folder] = process.argv.slice(2);
   root_folder = _root_folder
   backup_folder = _backup_folder
-
+  console.clear()
   console.log("-> root_folder", root_folder)
   console.log("-> backup_folder", backup_folder)
 

@@ -4,8 +4,8 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
-next="n"
-while (( $next == "y" || $next == "Y" ))
+next="y"
+while [ "$next" = "y"]
 do
   echo "[?] Enter folder name:"
   read f
