@@ -123,7 +123,12 @@ async function doBackup(out_folder, web_folder) {
 
   const s = p.spinner()
   s.start("Backing up to XML...")
-  await startBackup({ out_file_path })
+  await startBackup({
+    out_file_path,
+    old_domain: results.old_domain,
+    new_domain: results.new_domain,
+    start_id: results.start_id,
+  })
   s.stop("Exported!")
   p.note(out_file_path, "Backup files saved to:")
 }
@@ -140,7 +145,8 @@ async function main() {
 
 main().catch(console.error)
 
-async function startBackup({ out_file_path }) {
+async function startBackup({ out_file_path, old_domain, new_domain, start_id }) {
+  console.log(out_file_path, old_domain, new_domain, start_id)
   try {
     database.connect();
     const users = await UserModel
@@ -149,7 +155,10 @@ async function startBackup({ out_file_path }) {
       .exec()
     const { main: settings } = await get_settings(["main"])
 
-    const domain = alt_ip != '-' ? alt_ip : settings.domain
+    old_domain = old_domain ? old_domain : settings.domain
+    new_domain = new_domain ? new_domain : settings.domain
+    start_id = Number(start_id || 1)
+
     const default_list_agrs = {
       cond: {},
       req: {
@@ -161,7 +170,7 @@ async function startBackup({ out_file_path }) {
     }
     const { reviews } = await ReviewList(default_list_agrs);
     const { posts } = await PostList(default_list_agrs);
-    let start_id = Number(_start_id || 1)
+
     const items = [];
     [
       ...reviews.map(item => Object.assign(item, { _type: "review" })),

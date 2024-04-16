@@ -11,7 +11,9 @@ print_text_done(){
 print_text_yellow(){
   echo -e "${YELLOW}$1${ENDCOLOR}"
 }
-
+print_text_green(){
+  echo -e "${GREEN}$1${ENDCOLOR}"
+}
 print_text_hello() {
   echo ""
   print_text_yellow "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+"
