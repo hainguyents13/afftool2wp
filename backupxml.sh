@@ -5,7 +5,7 @@ if [ ! -d out ]; then
 fi
 
 next="n"
-while [[ next = "n" -o next = "N" ]]
+while (( next == "n" || next == "N" ))
 do
   echo "[?] Enter folder name:"
   read f
