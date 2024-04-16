@@ -4,7 +4,8 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
-while :
+next="n"
+while [ next = "n" ] || [ next = "N" ]
 do
   echo "[?] Enter folder name:"
   read f
@@ -22,4 +23,7 @@ do
     zip -rq $f.zip .
     mv $f.zip $dir/out/$f.zip
   fi
+
+  echo "[?] Continue? (y/n)"
+  read next
 done
