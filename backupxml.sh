@@ -43,11 +43,10 @@ do
     yarn add --dev @clack/prompts picocolors adm-zip -s
     echo ""
     node backupxml.js $dir/out $f
-    # mv backup.xml $dir/out/$f.xml
     # # Backup upload folder
-    # cd /web/$f/upload
-    # zip -rq $f.zip .
-    # mv $f.zip $dir/out/$f.zip
+    cd /web/$f/upload
+    zip -rq $f.zip .
+    mv $f.zip $dir/out/$f.zip
   fi
   echo ""
   echo "[?] Continue? (y/n)"

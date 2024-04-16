@@ -156,20 +156,19 @@ async function init(out_folder, web_folder) {
   const out_file_path = path.join(out_folder, `${web_folder}.xml`)
 
   const s_db = p.spinner()
-  s_db.start("Connecting database...")
+  s_db.start("Connecting to database...")
   await connectDb()
-  s_db.stop("Connected!")
+  s_db.stop("Database connected!")
 
   const s = p.spinner()
   s.start("Generating XML...")
-  console.log()
   const result = await startBackup({
     out_file_path,
     old_domain: backup.old_domain,
     new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
-  s.stop("Generated!")
+  s.stop("XML file generated!")
 
   if (!result.error) {
     const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported file: ${out_file_path}`
