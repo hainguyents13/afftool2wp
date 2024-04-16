@@ -37,7 +37,7 @@ do
     # Backup content
     cp backupxml.js /web/$f/
     cd /web/$f/
-    echo "Installing packages..."
+    echo "🠢 Installing packages..."
     yarn add --dev @clack/prompts picocolors adm-zip -s
     echo ""
     node backupxml.js $dir/out $f
