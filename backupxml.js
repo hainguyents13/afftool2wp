@@ -3,6 +3,7 @@ const { setTimeout } = require('node:timers/promises');
 const color = require('picocolors');
 const AdmZip = require('adm-zip')
 const fs = require('fs-extra')
+const path = require('path')
 
 function ZipSite({ new_file, backup_path }) {
   const zip = new AdmZip();
