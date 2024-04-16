@@ -7,6 +7,7 @@ fi
 next="y"
 while [ "$next" = "y"]
 do
+  echo "$next"
   echo "[?] Enter folder name:"
   read f
   if [[ ! -d "/web/$f/" ]]; then
