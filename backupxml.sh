@@ -14,7 +14,7 @@ do
     # Backup content
     cp backupxml.js /web/$f/
     cd /web/$f/
-    yarn add --dev @clack/prompts picocolors adm-zip
+    # yarn add --dev @clack/prompts picocolors adm-zip
     node backupxml.js $dir $f
     mv backup.xml $dir/out/$f.xml
     # Backup upload folder
