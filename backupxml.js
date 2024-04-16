@@ -146,7 +146,6 @@ async function main() {
 main().catch(console.error)
 
 async function startBackup({ out_file_path, old_domain, new_domain, start_id }) {
-  console.log(out_file_path, old_domain, new_domain, start_id)
   try {
     database.connect();
     const users = await UserModel
@@ -158,6 +157,8 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
     old_domain = old_domain ? old_domain : settings.domain
     new_domain = new_domain ? new_domain : settings.domain
     start_id = Number(start_id || 1)
+
+    console.log(out_file_path, old_domain, new_domain, start_id)
 
     const default_list_agrs = {
       cond: {},
@@ -213,8 +214,8 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
           // replace images src urls
           $('img').each((_i, img) => {
             const src = $(img).attr('src')
-            if (src && scolor.indexOf('/upload') == 0) {
-              $(img).attr('src', scolor.replace('/upload', '/wp-content/uploads'))
+            if (src && src.indexOf('/upload') == 0) {
+              $(img).attr('src', src.replace('/upload', '/wp-content/uploads'))
             }
           })
 
