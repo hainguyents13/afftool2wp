@@ -265,9 +265,15 @@ async function startBackup({ out_file_path, old_domain, new_domain, start_id }) 
         start_id = start_id + 2
 
         console.log("⭐ ", post.title)
-        console.log("content ", content.indexOf("%keyword%"))
-        console.log("title ", post.title.indexOf("%keyword%"))
-        console.log("post.meta_desc ", post.meta_desc.indexOf("%keyword%"))
+        if (
+          content.indexOf("%keyword%") > -1 ||
+          post.title.indexOf("%keyword%") > -1 ||
+          post.meta_desc.indexOf("%keyword%") > -1
+        ) {
+          console.log("content ", content.indexOf("%keyword%"))
+          console.log("title ", post.title.indexOf("%keyword%"))
+          console.log("post.meta_desc ", post.meta_desc.indexOf("%keyword%"))
+        }
 
         const post_with_thumbnail = [
           // post
