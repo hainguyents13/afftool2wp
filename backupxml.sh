@@ -37,7 +37,9 @@ do
     # Backup content
     cp backupxml.js /web/$f/
     cd /web/$f/
-    yarn add --dev @clack/prompts picocolors adm-zip -s 2> >(grep -v warning 1>&2)
+    echo "Installing packages..."
+    yarn add --dev @clack/prompts picocolors adm-zip
+    echo ""
     node backupxml.js $dir/out $f
     mv backup.xml $dir/out/$f.xml
     # # Backup upload folder
