@@ -5,7 +5,7 @@ if [ ! -d out ]; then
 fi
 
 next="y"
-while [ "$next" = "y"]
+while [ "$next" = "y" ]
 do
   echo "$next"
   echo "[?] Enter folder name:"
