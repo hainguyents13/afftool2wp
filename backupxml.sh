@@ -6,13 +6,10 @@ CYAN="\e[36m"
 ENDCOLOR="\e[0m"
 
 print_text_done(){
-  print_text_green "✓ Done!"
+  print_text_yellow "✓ Done!"
 }
 print_text_yellow(){
   echo -e "${YELLOW}$1${ENDCOLOR}"
-}
-print_text_green(){
-  echo -e "${GREEN}$1${ENDCOLOR}"
 }
 print_text_hello() {
   echo ""
