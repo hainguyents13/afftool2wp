@@ -103,18 +103,18 @@ async function init(out_folder, web_folder) {
         },
       })
     },
-    new_domain: ({ results }) => {
-      if (!results.change_domain) return;
-      return p.text({
-        message: 'New domain:',
-        placeholder: 'Ex: https://example.com or http://123.456.789.8000...',
-        validate: (value) => {
-          if (value && !url_pattern.test(value)) {
-            return 'Please enter a valid domain or ip address.';
-          }
-        },
-      })
-    },
+    // new_domain: ({ results }) => {
+    //   if (!results.change_domain) return;
+    //   return p.text({
+    //     message: 'New domain:',
+    //     placeholder: 'Ex: https://example.com or http://123.456.789.8000...',
+    //     validate: (value) => {
+    //       if (value && !url_pattern.test(value)) {
+    //         return 'Please enter a valid domain or ip address.';
+    //       }
+    //     },
+    //   })
+    // },
     has_posts: () =>
       p.confirm({
         message: `Does your new website already has some posts?`,
@@ -155,7 +155,7 @@ async function init(out_folder, web_folder) {
   const result = await startBackupContent({
     out_file_path,
     old_domain: backup.old_domain,
-    new_domain: backup.new_domain,
+    // new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
   s.stop("XML file generated!")
@@ -168,7 +168,7 @@ async function init(out_folder, web_folder) {
 
   await setTimeout(1000)
   if (!result.error) {
-    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- New domain: ${result.new_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
+    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
     p.note(note, "Export result:")
     p.log.info("Done!")
   } else {
@@ -263,7 +263,7 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
             if (src.indexOf('/upload') == 0) {
               new_src = src.replace('/upload', '/wp-content/uploads')
             }
-            new_src = replaceDomain(new_src, new_domain)
+            // new_src = replaceDomain(new_src, new_domain)
             $(img).attr('src', new_src)
           }
         })
