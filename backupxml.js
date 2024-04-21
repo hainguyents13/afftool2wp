@@ -168,7 +168,7 @@ async function init(out_folder, web_folder) {
 
   await setTimeout(1000)
   if (!result.error) {
-    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- Old domain: ${result.old_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
+    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- No content: ${result.error}\n- Old domain: ${result.old_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
     p.note(note, "Export result:")
     p.log.info("Done!")
   } else {
@@ -226,7 +226,6 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
     ];
     stats.total = all_items.length
     all_items.map((post, i) => {
-      stats.exported += 1
       let content = post.content
 
       // plain content from sections
@@ -244,6 +243,8 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
 
       const $ = cheerio.load(content)
       if ($('body').text() != "") {
+        stats.exported += 1
+
         const date_string = moment(post.created_at).utcOffset(0).toString()
         const date_format = moment(post.created_at).format("YYYY-MM-DD H:m:s")
         let creator = ""
@@ -376,6 +377,8 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
             : false
         ]
         items.push(...post_with_thumbnail)
+      } else {
+        stats.error += 1
       }
     })
 
