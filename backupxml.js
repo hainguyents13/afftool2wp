@@ -103,18 +103,6 @@ async function init(out_folder, web_folder) {
         },
       })
     },
-    // new_domain: ({ results }) => {
-    //   if (!results.change_domain) return;
-    //   return p.text({
-    //     message: 'New domain:',
-    //     placeholder: 'Ex: https://example.com or http://123.456.789.8000...',
-    //     validate: (value) => {
-    //       if (value && !url_pattern.test(value)) {
-    //         return 'Please enter a valid domain or ip address.';
-    //       }
-    //     },
-    //   })
-    // },
     has_posts: () =>
       p.confirm({
         message: `Does your new website already has some posts?`,
@@ -155,7 +143,6 @@ async function init(out_folder, web_folder) {
   const result = await startBackupContent({
     out_file_path,
     old_domain: backup.old_domain,
-    // new_domain: backup.new_domain,
     start_id: backup.start_id,
   })
   s.stop("XML file generated!")
@@ -186,13 +173,12 @@ async function main() {
   process.exit(0)
 }
 
-async function startBackupContent({ out_file_path, old_domain, new_domain, start_id }) {
+async function startBackupContent({ out_file_path, old_domain, start_id }) {
   const stats = {
     total: 0,
     exported: 0,
     out_file_path,
     old_domain,
-    new_domain,
     start_id
   }
 
@@ -204,7 +190,6 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
     const { main: settings } = await get_settings(["main"])
 
     old_domain = old_domain ? old_domain : settings.domain
-    new_domain = new_domain ? new_domain : settings.domain
     start_id = Number(start_id || 1)
 
     const default_list_agrs = {
@@ -283,26 +268,16 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
         start_id = start_id + 2
 
         // console.log("⭐ ", post.title)
-        if (
-          content.indexOf("%keyword%") > -1 ||
-          post.title.indexOf("%keyword%") > -1 ||
-          post.meta_desc.indexOf("%keyword%") > -1
-        ) {
-          console.log("content ", content.indexOf("%keyword%"))
-          console.log("title ", post.title.indexOf("%keyword%"))
-          console.log("post.meta_desc ", post.meta_desc.indexOf("%keyword%"))
-        }
-
         const post_with_thumbnail = [
           // post
           {
             title: { $: post.title },
-            link: urljoin(new_domain, post.meta_slug),
+            link: urljoin(old_domain, post.meta_slug),
             pubDate: date_string,
             "dc:creator": { $: creator },
             guid: {
               "@isPermaLink": "fase",
-              $: urljoin(new_domain, '/?p=' + post_id)
+              $: urljoin(old_domain, '/?p=' + post_id)
             },
             description: { $: post.meta_desc.replace("%keyword%", "") },
             "excerpt:encoded": { $: post.meta_desc.replace("%keyword%", "") },
@@ -342,12 +317,12 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
           attachment_file
             ? {
               title: { $: post.title },
-              link: urljoin(new_domain, post.meta_slug),
+              link: urljoin(old_domain, post.meta_slug),
               pubDate: date_string,
               "dc:creator": { $: creator },
               guid: {
                 "@isPermaLink": "fase",
-                $: post.image || ""
+                $: attachment_file || ""
               },
               description: "",
               "content:encoded": { $: "" },
@@ -365,7 +340,7 @@ async function startBackupContent({ out_file_path, old_domain, new_domain, start
               "wp:post_type": { $: "attachment" },
               "wp:post_password": { $: "" },
               "wp:is_sticky": 0,
-              "wp:attachment_url": { $: post.image || "" },
+              "wp:attachment_url": { $: attachment_file || "" },
               "wp:postmeta": [{
                 "wp:meta_key": { $: "_wp_attached_file" },
                 "wp:meta_value": { $: attachment_file }
