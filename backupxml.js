@@ -177,6 +177,7 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
   const stats = {
     total: 0,
     exported: 0,
+    error: 0,
     out_file_path,
     old_domain,
     start_id
@@ -227,6 +228,7 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
       }
 
       const $ = cheerio.load(content)
+      console.log("❤️", post.title, $('body').text().length)
       if ($('body').text() != "") {
         stats.exported += 1
 
