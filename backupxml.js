@@ -215,7 +215,7 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
       let content = post.content
 
       // plain content from sections
-      if (settings.edit_mode != 'block') {
+      if (settings.edit_mode == 'block' || !content) {
         content = post._type == "review"
           ? sectionsToContent({
             meta_content: post.meta_content,
@@ -225,7 +225,6 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
             meta_content: post.meta_content.main.content,
             sections: post.content_blocks
           })
-        console.log("❤️", post.custom_sections.length, content)
       }
 
       const $ = cheerio.load(content)
