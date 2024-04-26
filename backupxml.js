@@ -225,10 +225,10 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
             meta_content: post.meta_content.main.content,
             sections: post.content_blocks
           })
+        console.log("❤️", post.custom_sections.length, content)
       }
 
       const $ = cheerio.load(content)
-      console.log("❤️", post.title, $('body').text().length)
       if ($('body').text() != "") {
         stats.exported += 1
 
