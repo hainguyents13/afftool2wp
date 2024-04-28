@@ -108,18 +108,18 @@ async function init(out_folder, web_folder) {
         message: `Does your new website already has some posts?`,
         initialValue: false
       }),
-    start_id: ({ results }) => {
-      if (!results.has_posts) return;
-      return p.text({
-        message: 'You must provide a starting ID to restore backed-up posts. Without a starting ID, there could be conflicts with your existing posts',
-        placeholder: 'Start ID...',
-        validate: (value) => {
-          if (value && !/^[0-9]*$/.test(value)) {
-            return 'Start ID must be a number';
-          }
-        },
-      })
-    }
+    // start_id: ({ results }) => {
+    //   if (!results.has_posts) return;
+    //   return p.text({
+    //     message: 'You must provide a starting ID to restore backed-up posts. Without a starting ID, there could be conflicts with your existing posts',
+    //     placeholder: 'Start ID...',
+    //     validate: (value) => {
+    //       if (value && !/^[0-9]*$/.test(value)) {
+    //         return 'Start ID must be a number';
+    //       }
+    //     },
+    //   })
+    // }
   },
     {
       onCancel: () => {
@@ -143,7 +143,6 @@ async function init(out_folder, web_folder) {
   const result = await startBackupContent({
     out_file_path,
     old_domain: backup.old_domain,
-    start_id: backup.start_id,
   })
   s.stop("XML file generated!")
 
@@ -173,15 +172,16 @@ async function main() {
   process.exit(0)
 }
 
-async function startBackupContent({ out_file_path, old_domain, start_id }) {
+async function startBackupContent({ out_file_path, old_domain }) {
   const stats = {
     total: 0,
     exported: 0,
     error: 0,
     out_file_path,
-    old_domain,
-    start_id
+    old_domain
   }
+
+  let start_id = 1
 
   try {
     const users = await UserModel
@@ -191,7 +191,6 @@ async function startBackupContent({ out_file_path, old_domain, start_id }) {
     const { main: settings } = await get_settings(["main"])
 
     old_domain = old_domain ? old_domain : settings.domain
-    start_id = Number(start_id || 1)
 
     const default_list_agrs = {
       cond: {},
