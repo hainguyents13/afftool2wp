@@ -103,11 +103,11 @@ async function init(out_folder, web_folder) {
         },
       })
     },
-    has_posts: () =>
-      p.confirm({
-        message: `Does your new website already has some posts?`,
-        initialValue: false
-      }),
+    // has_posts: () =>
+    //   p.confirm({
+    //     message: `Does your new website already has some posts?`,
+    //     initialValue: false
+    //   }),
     // start_id: ({ results }) => {
     //   if (!results.has_posts) return;
     //   return p.text({
