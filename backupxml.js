@@ -153,13 +153,9 @@ async function init(out_folder, web_folder) {
   s_upload.stop("Upload folder packed!")
 
   await setTimeout(1000)
-  if (!result.error) {
-    const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- No content: ${result.error}\n- Old domain: ${result.old_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
-    p.note(note, "Export result:")
-    p.log.info("Done!")
-  } else {
-    p.log.error("Error: " + result.error)
-  }
+  const note = `- Total: ${result.total}\n- Exported: ${result.exported}\n- No content: ${result.error}\n- Old domain: ${result.old_domain || "-"}\n- Exported XML: ${out_file_path}\n- Exported Upload: ${out_upload_path}`
+  p.note(note, "Export result:")
+  p.log.info("Done!")
 }
 
 async function main() {
