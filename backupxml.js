@@ -260,6 +260,7 @@ async function startBackupContent({ out_file_path, old_domain }) {
         })
 
         content = $('body').html()
+        content = content.replace("%comparison_table%", '')
         const post_id = start_id
         start_id = start_id + 2
 
